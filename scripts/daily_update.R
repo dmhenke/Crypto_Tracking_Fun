@@ -132,7 +132,8 @@ update_asset <- function(a) {
   log_msg("%s: %s .. %s (%s)", sym, from, to, a$source)
   new <- tryCatch(if (coin) fetch_coinbase(sym, from, to) else fetch_yahoo(sym, from, to),
                   error = function(e) { STATUS[[sym]] <<- list(ok = FALSE, message = conditionMessage(e)); NULL })
-  if (is.null(STATUS[[sym]])) STATUS[[sym]] <<- list(ok = TRUE, message = sprintf("%d rows fetched", if (is.null(new)) 0L else nrow(new)))
+  # every request covers >= 5 days, so 0 rows is a failed source, not a quiet day
+  if (is.null(STATUS[[sym]])) STATUS[[sym]] <<- if (is.null(new) || !nrow(new)) list(ok = FALSE, message = "0 rows fetched") else list(ok = TRUE, message = sprintf("%d rows fetched", nrow(new)))
   # documented source-data corrections, applied to freshly fetched rows only (never twice)
   if (!is.null(new)) for (fx in CFG$data_fixes) if (fx$symbol == sym) {
     k <- new$date >= as.Date(fx$from) & new$date <= as.Date(fx$to)
@@ -151,7 +152,8 @@ update_nyclose <- function(a) {
   log_msg("%s 16:00 ET: %s .. %s", sym, from, to)
   new <- tryCatch(fetch_coinbase_nyclose(sym, from, to), error = function(e) {
     STATUS[[paste0(sym, " 16:00 ET")]] <<- list(ok = FALSE, message = conditionMessage(e)); NULL })
-  if (is.null(STATUS[[paste0(sym, " 16:00 ET")]])) STATUS[[paste0(sym, " 16:00 ET")]] <<- list(ok = TRUE, message = sprintf("%d rows fetched", if (is.null(new)) 0L else nrow(new)))
+  k <- paste0(sym, " 16:00 ET")
+  if (is.null(STATUS[[k]])) STATUS[[k]] <<- if (is.null(new) || !nrow(new)) list(ok = FALSE, message = "0 rows fetched") else list(ok = TRUE, message = sprintf("%d rows fetched", nrow(new)))
   d <- merge_store(old, new); if (!is.null(d)) write.csv(d, path, row.names = FALSE); d
 }
 

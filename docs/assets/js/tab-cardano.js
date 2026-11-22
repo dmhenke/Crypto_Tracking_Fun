@@ -34,6 +34,7 @@
       else f += ch;
     }
     if (f !== "" || row.length) { row.push(f); rows.push(row); }
+    if (!rows.length) return [];
     var hdr = rows.shift().map(function (h) { return h.trim(); });
     return rows.filter(function (r) { return r.length > 1; }).map(function (r) { var o = {}; hdr.forEach(function (h, i) { o[h] = (r[i] || "").trim(); }); return o; });
   }
@@ -55,9 +56,9 @@
     var src = cols.filter(function (c) { return /epoch/i.test(c); }).map(function (c) { return "epoch:" + c; })
       .concat(cols.filter(function (c) { return RW.some(function (r) { return /\d{4}/.test(r[c]) && !isNaN(Date.parse(r[c])); }); }), ["_fileDate"]);
     var label = function (o) { return o === "_fileDate" ? "date in file name" : o.indexOf("epoch:") === 0 ? o.slice(6) + " (epoch number)" : o + " (date)"; };
-    A.$("rwCol").innerHTML = numeric.map(function (o) { return '<option value="' + o + '">' + o + "</option>"; }).join("");
+    A.$("rwCol").innerHTML = numeric.map(function (o) { return '<option value="' + A.esc(o) + '">' + A.esc(o) + "</option>"; }).join("");
     var pref = numeric.filter(function (c) { return /reward|amount|ada/i.test(c); })[0]; if (pref) A.$("rwCol").value = pref;
-    A.$("rwDate").innerHTML = src.map(function (o) { return '<option value="' + o + '">' + label(o) + "</option>"; }).join("");
+    A.$("rwDate").innerHTML = src.map(function (o) { return '<option value="' + A.esc(o) + '">' + A.esc(label(o)) + "</option>"; }).join("");
     A.$("rwControls").hidden = false; A.$("rwChart").hidden = false; A.$("rwStats").hidden = false;
     renderRewards();
   }
@@ -77,8 +78,8 @@
     Plotly.react("rwChart", [{ x: eps.map(String), y: vals, type: "bar", name: col, marker: { color: A.color("ADA-USD") } }],
       A.layout({ showlegend: false, hovermode: "closest", xaxis: { title: "Epoch", type: "category" }, yaxis: { title: col } }, false), A.config());
     var cols = Object.keys(RW[0]).filter(function (c) { return c[0] !== "_"; }).slice(0, 6);
-    A.$("rwTbl").innerHTML = "<thead><tr><th>Epoch</th>" + cols.map(function (c) { return "<th>" + c + "</th>"; }).join("") + "</tr></thead><tbody>" +
-      RW.slice(0, 300).map(function (r) { var e = epochOf(r); return "<tr><td>" + (isNaN(e) ? "–" : e) + "</td>" + cols.map(function (c) { return "<td>" + r[c] + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody>";
+    A.$("rwTbl").innerHTML = "<thead><tr><th>Epoch</th>" + cols.map(function (c) { return "<th>" + A.esc(c) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      RW.slice(0, 300).map(function (r) { var e = epochOf(r); return "<tr><td>" + (isNaN(e) ? "–" : e) + "</td>" + cols.map(function (c) { return "<td>" + A.esc(r[c]) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody>";
   }
   function initDrop() {
     var d = A.$("drop"), inp = A.$("fileIn");

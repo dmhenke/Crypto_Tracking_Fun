@@ -11,6 +11,7 @@
     A.chips($("hmWin"), WINS.map(function (o) { return { v: o.v, t: o.v }; }), w, function (v) { A.set(T, "hw", v); renderHeat(); });
     A.chips($("hmFreq"), [{ v: "D", t: "Daily" }, { v: "W", t: "Weekly" }], f, function (v) { A.set(T, "hf", v); renderHeat(); });
     A.assetChips($("hmAssets"), A.symbols(), syms, function (v) { var i = syms.indexOf(v); if (i >= 0) syms.splice(i, 1); else syms.push(v); A.set(T, "ha", syms.join(",")); renderHeat(); }, true);
+    if (!syms.length) { Plotly.purge("heat"); return; }
     var to = syms.map(A.lastDate).sort()[0], wd = WINS.filter(function (o) { return o.v === w; })[0].d, from = wd ? A.shiftDate(to, -wd) : "2021-01-01";
     var z = [], txt = [], hov = [];
     syms.forEach(function (a, i) {

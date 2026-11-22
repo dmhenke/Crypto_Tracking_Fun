@@ -52,7 +52,7 @@
     }
     var L = A.layout({ yaxis: { title: "Portfolio value ($)" } }); A.withEvents(traces, L, syms, from);
     A.plot("simChart", traces, L, "Hypothetical value of " + (mode === "lump" ? "a $" + amt + " lump sum" : "$" + amt + " " + (mode === "W" ? "weekly" : "monthly") + " purchases") + " from " + from + " to " + to + ".");
-    res.sort(function (a, b) { return b.final - a.final; });
+    res.sort(function (a, b) { return b.final / b.invested - a.final / a.invested; });   // by gain: late starters invest less
     $("simTbl").innerHTML = '<thead><tr><th>Asset</th><th class="num">Invested</th><th class="num">Value</th><th class="num">Gain</th><th class="num">' +
       A.tip("Annual return", "Money-weighted (internal) rate of return, annualized: the constant yearly rate that turns the purchases into the final value.") +
       '</th><th class="num">' + A.tip("Worst drop", "Largest peak-to-trough fall of the asset's price during the period.") + "</th></tr></thead><tbody>" +
@@ -60,8 +60,8 @@
         return "<tr><td>" + A.short(r.s) + '</td><td class="num">' + A.usd(r.invested) + '</td><td class="num">' + A.usd(r.final) + '</td><td class="num ' + A.cls(g) + '">' + A.spct(g) +
           '</td><td class="num ' + A.cls(r.irr) + '">' + A.spct(r.irr) + '</td><td class="num">' + A.pct(r.dd) + "</td></tr>"; }).join("") + "</tbody>";
     var best = res[0], worst = res[res.length - 1];
-    $("simNote").innerHTML = res.length > 1 ? '<div class="callout callout-info"><strong class="callout-title">Same money, different vehicles</strong>' +
-      "Over this period " + A.short(best.s) + " ended at " + A.usd(best.final) + " and " + A.short(worst.s) + " at " + A.usd(worst.final) + ", a difference of " + A.usd(best.final - worst.final) +
+    $("simNote").innerHTML = res.length > 1 ? '<div class="callout callout-info"><strong class="callout-title">Comparing vehicles</strong>' +
+      "Over this period " + A.short(best.s) + " turned " + A.usd(best.invested) + " into " + A.usd(best.final) + " and " + A.short(worst.s) + " turned " + A.usd(worst.invested) + " into " + A.usd(worst.final) +
       ". Funds that hold the same coin differ mainly by fees and, before 2024, by the premium or discount they traded at." +
       (late.length ? " Started late because no earlier price exists: " + late.join(", ") + "." : "") + " Past results say nothing reliable about future returns.</div>" : "";
   }

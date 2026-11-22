@@ -20,12 +20,18 @@
     q = p - 0.5; r = q * q;
     return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
   }
-  // Student t quantile: Cornish-Fisher expansion in 1/df (accurate to <1e-4 for df >= 8).
+  // Student t quantile: Cornish-Fisher start (off by ~1e-4 at df 8, ~1% at df 2), then Newton steps on the exact CDF.
   function qt(p, df) {
     var z = qnorm(p), z2 = z * z, z3 = z2 * z, z5 = z3 * z2, z7 = z5 * z2, z9 = z7 * z2;
-    return z + (z3 + z) / (4 * df) + (5*z5 + 16*z3 + 3*z) / (96 * df * df)
-             + (3*z7 + 19*z5 + 17*z3 - 15*z) / (384 * Math.pow(df, 3))
-             + (79*z9 + 776*z7 + 1482*z5 - 1920*z3 - 945*z) / (92160 * Math.pow(df, 4));
+    var t = z + (z3 + z) / (4 * df) + (5*z5 + 16*z3 + 3*z) / (96 * df * df)
+              + (3*z7 + 19*z5 + 17*z3 - 15*z) / (384 * Math.pow(df, 3))
+              + (79*z9 + 776*z7 + 1482*z5 - 1920*z3 - 945*z) / (92160 * Math.pow(df, 4));
+    var c = Math.exp(lgamma((df + 1) / 2) - lgamma(df / 2)) / Math.sqrt(df * Math.PI);
+    for (var it = 0; it < 10; it++) {
+      var cdf = t >= 0 ? 1 - pt2(t, df) / 2 : pt2(t, df) / 2, step = (cdf - p) / (c * Math.pow(1 + t * t / df, -(df + 1) / 2));
+      t -= step; if (Math.abs(step) < 1e-13 * Math.max(1, Math.abs(t))) break;
+    }
+    return t;
   }
   // log-gamma (Lanczos, g = 7) and regularized lower incomplete gamma P(a, x)
   function lgamma(z) {

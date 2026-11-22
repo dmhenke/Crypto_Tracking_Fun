@@ -23,7 +23,7 @@
     });
     A.withEvents(traces, L, [sym], null);
     var n = a.close.length, ath = a.close.indexOf(Math.max.apply(null, a.close));
-    var r = Stats.logReturns(a.close.slice(Math.max(0, n - 366))), k = a.kind === "fund" ? 252 : 365, v = Stats.sdCI(r, 0.95);
+    var k = a.kind === "fund" ? 252 : 365, r = Stats.logReturns(a.close.slice(Math.max(0, n - k - 1))), v = Stats.sdCI(r, 0.95);   // last year = k returns
     A.plot("priceChart", traces, L, a.label + " daily close from " + a.date[0] + " to " + a.date[n - 1] + ", latest " + A.px(a.close[n - 1]) +
       ", " + A.pct(dd.series[n - 1]) + " below its high in this data.");
     $("priceStats").innerHTML = [

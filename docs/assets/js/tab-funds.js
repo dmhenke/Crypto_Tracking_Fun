@@ -38,7 +38,8 @@
       A.fmt(g.anchor.units_per_share, 8) + " BTC/share on " + g.anchor.date + "; ETHE: " + A.fmt(F.ETHE.anchor.units_per_share, 8) + " ETH/share on " + F.ETHE.anchor.date + ") " +
       "and rolls it through the fee schedule (GBTC " + fees("GBTC") + "; ETHE " + fees("ETHE") + "), which accrues daily. The value of the holdings uses Coinbase's price at 16:00 ET, the NYSE close. " +
       "<ul style=\"margin:0.6rem 0 0 1.2rem\">" + rows +
-      "<li>As ETFs, both funds' median premiums are within ±0.05% of zero, as arbitrage requires.</li>" +
+      "<li>As ETFs, the median premiums are " + names.map(function (s) { return A.short(s) + " " + A.spct(F[s].check.etf_era_median_premium, 2); }).join(" and ") +
+        "; arbitrage should hold them near zero.</li>" +
       "<li>The July 2024 spin-offs of about 10% of each fund into the Grayscale Mini Trusts are already reflected in Yahoo's adjusted price history, so they are not subtracted again. The flat ETF-era premium across those dates confirms this.</li></ul></div>";
   }
 

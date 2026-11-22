@@ -5,7 +5,9 @@ j <- fromJSON(system("node tests/stats_dump.js", intern = TRUE), simplifyVector 
 rel <- function(a, b) abs(a - b) / pmax(abs(b), 1e-12)
 q <- do.call(rbind, lapply(j$q, as.data.frame))
 cat(sprintf("qnorm  max rel err: %.2e\n", max(rel(q$qnorm, qnorm(q$p)))))
-cat(sprintf("qt     max rel err: %.2e  (df >= 8)\n", max(rel(q$qt, qt(q$p, q$df))[q$df >= 8])))
+qt_err <- max(rel(q$qt, qt(q$p, q$df)))
+cat(sprintf("qt     max rel err: %.2e  (df >= 3)\n", qt_err))
+stopifnot(qt_err < 1e-8)
 cat(sprintf("qchisq max rel err: %.2e  (df >= 3)\n", max(rel(q$qchisq, qchisq(q$p, q$df)))))
 worst <- 0
 for (p in j$pairs) {
@@ -45,11 +47,13 @@ if (requireNamespace("sandwich", quietly = TRUE)) {
 r <- unlist(ext$anova$r); wd <- factor(unlist(ext$anova$wd)); a <- anova(lm(r ~ wd))
 e <- max(rel(c(ext$anova$res$F, ext$anova$res$p), c(a$`F value`[1], a$`Pr(>F)`[1]))); worst <- max(worst, e)
 cat(sprintf("weekday ANOVA: F %.4f p %.4f (R: F %.4f p %.4f) rel err %.1e\n", ext$anova$res$F, ext$anova$res$p, a$`F value`[1], a$`Pr(>F)`[1], e))
+e_ccf <- 0
 for (c in ext$ccf$res) {
   k <- c$lag; n <- length(x); idx <- seq_len(n); keep <- idx + k >= 1 & idx + k <= n
-  R <- cor(x[keep], y[idx[keep] + k]); e <- rel(c$r, R); worst <- max(worst, e)
+  R <- cor(x[keep], y[idx[keep] + k]); e_ccf <- max(e_ccf, rel(c$r, R))
 }
-cat(sprintf("cross-correlation lags -2..2 max rel err: %.1e\n", e))
+worst <- max(worst, e_ccf)
+cat(sprintf("cross-correlation lags -2..2 max rel err: %.1e\n", e_ccf))
 if (requireNamespace("sandwich", quietly = TRUE)) for (h in ext$hacmean) {
   V <- sandwich::NeweyWest(lm(y ~ 1), lag = h$lag, prewhite = FALSE, adjust = FALSE)
   e <- rel(h$se, sqrt(V[1, 1])); worst <- max(worst, e)

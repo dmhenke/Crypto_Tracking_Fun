@@ -44,7 +44,7 @@
     var a = A.meta(s), p = a.close, H = steps(s, h), n = p.length, fund = A.isFund(s);
     var bt = METHODS.map(function (o) { return Object.assign({ m: o }, backtest(p, H, o.v)); }), cur = bt.filter(function (b) { return b.m.v === mth; })[0];
     // current forecast fan
-    var q = model(p, mth)(n), z80 = Stats.qnorm(0.9), z95 = Stats.qnorm(0.975), fd = addSteps(a.date[n - 1], H, fund), last = p[n - 1];
+    var q = model(p, mth)(n - 1), z80 = Stats.qnorm(0.9), z95 = Stats.qnorm(0.975), fd = addSteps(a.date[n - 1], H, fund), last = p[n - 1];
     var band = function (z, sign) { return fd.map(function (d, i) { var k = i + 1; return last * Math.exp(q.mu * k + sign * z * q.sigma * Math.sqrt(k)); }); };
     var med = fd.map(function (d, i) { return last * Math.exp(q.mu * (i + 1)); }), th = A.css("--global-theme-color"), nh = Math.max(60, 12 * H), hx = a.date.slice(Math.max(0, n - nh));
     var fx = [a.date[n - 1]].concat(fd), pre = function (arr) { return [last].concat(arr); };
