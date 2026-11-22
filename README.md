@@ -1,74 +1,81 @@
 # Crypto Tracking Fun
 
-Daily tracking of Bitcoin, Ethereum and Cardano against the Grayscale trusts (GBTC, ETHE), with an interactive dashboard on GitHub Pages.
+Daily, interactive analysis of Bitcoin, Ethereum, Solana and Cardano on Coinbase against the spot crypto funds: Grayscale's GBTC and ETHE and BlackRock's IBIT and ETHA.
 
 **Dashboard:** https://dmhenke.github.io/Crypto_Tracking_Fun/
 
-## What it shows
+The page uses the same theme as [SolarPergola](https://dmhenke.github.io/SolarPergola/), with a system/light/dark toggle. Every statistic is computed in the browser from the daily data and updates as you change the inputs. Every chart has a CSV download button, and every view has a shareable link: the URL records the tab and its settings, e.g. `#analysis?y=ETHE&x=ETH-USD&f=W&ci=H`.
 
-The page uses the same theme as [SolarPergola](https://dmhenke.github.io/SolarPergola/): teal palette; Inter, Spectral and JetBrains Mono fonts; and a system/light/dark toggle. It has five tabs:
+## Tabs
 
-- **Overview:** latest prices, and fold change from a reference date you choose (default 2021-01-14, as in the original scripts). Trusts can be shown as total return, with ETHE's distributions reinvested. A table gives each asset's annualized growth.
-- **Trusts:** coin fold change minus trust fold change (BTC − GBTC, ETH − ETHE), and a ratio explorer (BTC/GBTC, ETH/ETHE, BTC/ETH, ETH/BTC, ADA/BTC, and trust-vs-Coinbase dollar volume).
-- **Prices:** price, volume and drawdown for each asset, with the all-time high, maximum drawdown and 1-year volatility (95% CI).
-- **Analysis:** an interactive return-relationship explorer. You pick any two assets, the window (presets or custom dates), the return frequency (daily, weekly or monthly), the confidence level (90, 95 or 99%) and the rolling-window length. The page recomputes in the browser:
-  - beta, alpha, correlation, R², volatilities, mean return and tracking error, each with intervals where defined, plus skew, kurtosis and drawdowns
-  - a scatter plot with the OLS fit and its confidence band
-  - a histogram of returns with a normal fit
-  - rolling correlation (with a Fisher-z band) and rolling beta
-  - a plain-language reading of the results
-- **Cardano:** the current epoch with a countdown and schedule. Epochs last 5 days and roll over at 21:44:51 UTC; epoch 532 began 2025-01-04. You can also drop `Rewards-*.csv` wallet exports onto the page; they are parsed in the browser, never uploaded, and summarized per epoch.
+| Tab | What it shows |
+|---|---|
+| **Overview** | A daily brief written by the pipeline (each move scaled by that asset's own last 90 days, new 52-week highs and lows, epoch rollovers), latest prices, and growth since a reference date (default 2021-01-14, as in the original scripts) with an annualized-return table. |
+| **Funds** | Each Grayscale fund's estimated premium or discount to its holdings; the fee drag of GBTC vs IBIT and ETHE vs ETHA, measured from the data with Newey-West intervals and compared with the fee schedules; coin minus fund; and a ratio explorer. |
+| **Prices** | Price, volume, total return, the 16:00 ET price and drawdown for any asset, with the all-time high, maximum drawdown and 1-year volatility (95% CI). |
+| **Analysis** | Return relationship explorer. You choose two assets, the window, daily/weekly/monthly returns, the confidence level, and the interval method: normal theory, Newey-West or moving-block bootstrap. It also shows a scatter with the OLS band, a return histogram, rolling correlation and beta, lead-lag cross-correlations (UTC close vs. 16:00 ET), day-of-week effects (ANOVA with Bonferroni-adjusted intervals), and drawdowns. |
+| **Risk** | A correlation heatmap for any window and set of assets (hover for the 95% CI and n), and rolling 30/60/90-day volatility. |
+| **Simulator** | Lump-sum or weekly/monthly purchases into any set of assets, with optional trading cost: invested amount, final value, money-weighted annual return, and worst drop. A hypothetical, not advice. |
+| **Forecast** | 80% and 95% price ranges from three simple models (random walk, random walk + trend, EWMA volatility), each scored by a rolling-origin backtest over the whole history: MAE, MAPE and interval coverage with Wilson 95% intervals. |
+| **Cardano** | The current epoch with a countdown and schedule (5-day epochs rolling over at 21:44:51 UTC; epoch 532 began 2025-01-04). Drop `Rewards-*.csv` wallet exports to summarize rewards per epoch; files are parsed in the browser and never uploaded. |
+| **Data** | Source status and freshness, downloads, the fund fee table with sources, corrections applied to source data, and a glossary. A banner appears on every tab if data are more than two days old or a source failed. |
 
-The browser statistics in `docs/assets/js/stats.js` are checked against base R by `Rscript tests/validate_stats.R`, which needs `node`. The two agree to about 1e-9 relative error.
+Event markers (Terra, Celsius, FTX, the Merge, Grayscale's court win, ETF launches, the 2024 halving, the Mini Trust spin-offs, Cardano hard forks, the October 2025 liquidation cascade, Fusaka) can be switched on and off. Dates and sources are in `docs/data/events.json`.
 
-## Data sources (no API keys)
+## Data and methods
 
-| Asset | Source | Bar |
+| Series | Source | Notes |
 |---|---|---|
-| BTC-USD, ETH-USD, ADA-USD | Coinbase Exchange public candles API | UTC calendar day (complete days only) |
-| GBTC, ETHE | Yahoo Finance chart API | NYSE session; `close` unadjusted, `adjclose` includes distributions |
+| BTC, ETH, SOL, ADA daily | Coinbase Exchange public candles | complete UTC days; ADA from 2021-03-18 and SOL from 2021-06-17, their Coinbase listings |
+| BTC, ETH at 16:00 ET | Coinbase hourly candles | open of the 16:00 New York hour, to compare with the NYSE close at the same instant |
+| GBTC, IBIT, ETHE, ETHA daily | Yahoo Finance chart API | `close` and `adjclose` (distributions reinvested); full history re-pulled daily |
 
-ADA-USD history starts on 2021-03-18, when Coinbase listed it.
+**Fund premium/discount.** The crypto held per share starts from the issuer's published value (GBTC 0.00077105 BTC on 2026-11-20; ETHE 0.00801892 ETH on 2026-10-23). It is rolled back through the fee schedule (GBTC 2.0%, then 1.5% from 2024-01-11; ETHE 2.5%), which accrues daily. The value of the holdings uses the 16:00 ET Coinbase price. Checks:
 
-## Daily pipeline
+- The ETF-era median premium is +0.01% for GBTC (IQR 0.08 pp) and −0.03% for ETHE (IQR 0.11 pp), as arbitrage requires.
+- The latest GBTC estimate is −0.05%; Grayscale published −0.04%.
+- The reconstructed GBTC discount is −24.6% on 2023-08-28 and −17.7% on 2023-08-29, against about −25% and about −17% to −18% reported around the court ruling.
 
-`scripts/daily_update.R` uses base R plus `jsonlite`. It is a cleaned-up port of `r_scripts/playing with btc_v2.R` and `r_scripts/Proj_Cardano_Rewards.R`. On each run it:
+The July 2024 Mini Trust spin-offs (about 10% of each fund's holdings) are already reflected in Yahoo's adjusted history, so they are not applied again.
 
-1. Re-fetches the last 5 stored days of Coinbase candles, so a bar that was still forming is corrected, plus any new days. It re-pulls the full Yahoo history, because Yahoo restates `adjclose` after each distribution.
-2. Merges the results into `data/<ASSET>.csv`, one row per date.
-3. Writes `docs/data/prices.json` for the dashboard and `docs/data/summary.json` (latest values, statistics, epoch schedule, and data-quality counts).
+**Data correction.** Yahoo left ETHE's 2024-07-18 to 07-22 sessions unscaled for the spin-off, which created false −11%/+11% daily moves. The pipeline divides those three days by 0.9. The rule is documented in `config/assets.json` and listed on the Data tab.
 
-If one source fails, that asset keeps its stored data and the run continues.
+**Statistics.** `docs/assets/js/stats.js` implements OLS, Fisher-z correlation intervals, χ² volatility intervals, Newey-West HAC standard errors, a seeded moving-block bootstrap, one-way ANOVA, cross-correlation, and Wilson intervals. `Rscript tests/validate_stats.R` (needs `node`; optionally `sandwich`) checks them against R's `lm`, `confint`, `cor.test`, `t.test`, `anova`, `sandwich::NeweyWest`, `pt`, `pf`, `pbeta`, `qchisq` and `prop.test`. The two agree to better than 1e-8 relative error, and the check runs on every push and before every daily update.
 
-`.github/workflows/daily_update.yml` runs the script at 00:20 UTC every day, commits any data changes, and deploys `docs/` to GitHub Pages. It can also be started from the **Actions** tab.
+## Pipeline
 
-### Run locally
+`scripts/daily_update.R` uses base R plus `jsonlite` and is driven by `config/assets.json`. To track a new asset, add an entry there (Coinbase pair or Yahoo ticker, colors, and for funds the underlying coin and fee schedule); no code changes are needed.
+
+`.github/workflows/daily_update.yml` runs at 00:20 UTC daily in three jobs:
+
+1. Validate the statistics against R.
+2. Update the data and commit it. If a source failed or the data are stale, the job opens or comments on a `data-pipeline` issue, and closes it once a later run is clean.
+3. Deploy `docs/` to GitHub Pages.
 
 ```bash
-Rscript scripts/daily_update.R           # incremental update
-Rscript scripts/daily_update.R --full    # rebuild all history from 2021-01-01
+Rscript scripts/daily_update.R           # incremental update (first run backfills 2021→today, ~3 min)
+Rscript scripts/daily_update.R --full    # rebuild everything
+Rscript tests/validate_stats.R           # check the browser statistics against R
 cd docs && python3 -m http.server 8000   # then open http://localhost:8000
 ```
 
-## One-time GitHub setup
-
-1. Push: `git push -u origin main`
-2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
-3. **Actions →** "Daily data update and Pages deploy" **→ Run workflow** for the first deploy.
+**GitHub Pages setup (once):** Settings → Pages → Source: **GitHub Actions**.
 
 ## Layout
 
 ```
-.github/workflows/daily_update.yml   daily cron: R pipeline -> commit -> Pages deploy
-scripts/daily_update.R               data pipeline
-data/*.csv                           stored daily bars
-docs/index.html                      dashboard (Plotly), tabbed
-docs/assets/css/site.css             theme (ported from SolarPergola) + dashboard styles
-docs/assets/js/stats.js              browser statistics library
-docs/assets/js/app.js                dashboard logic
-docs/data/*.json                     dashboard data, regenerated daily
-tests/validate_stats.R               checks stats.js against R (uses tests/stats_dump.js)
-r_scripts/                           original exploratory R scripts (reference)
+config/assets.json            assets, fee schedules, issuer anchors, data corrections
+scripts/daily_update.R        data pipeline
+data/*.csv                    stored daily bars (+ *_nyclose.csv at 16:00 ET)
+docs/index.html               dashboard shell (Plotly cartesian bundle)
+docs/assets/css/site.css      theme (from SolarPergola) + dashboard styles
+docs/assets/js/stats.js       statistics library
+docs/assets/js/core.js        shared helpers: theming, events, CSV export, URL state
+docs/assets/js/tab-*.js       one module per tab; main.js boots the page
+docs/data/*.json              prices, funds, summary (regenerated daily), events (curated)
+tests/                        stats_dump.js + validate_stats.R
+r_scripts/                    original exploratory R scripts
+archive/                      retired Prophet forecast (scored poorly; see the Forecast tab)
 ```
 
 Not investment advice.

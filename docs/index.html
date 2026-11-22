@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Crypto Tracking: Bitcoin, Ethereum and Cardano vs. the Grayscale Trusts</title>
-    <meta name="description" content="Daily-updated, interactive analysis of BTC, ETH and ADA on Coinbase against the Grayscale GBTC and ETHE trusts, with a Cardano epoch tracker." />
+    <title>Crypto Tracking: Bitcoin, Ethereum, Solana and Cardano vs. the spot crypto ETFs</title>
+    <meta name="description" content="Daily-updated, interactive analysis of BTC, ETH, SOL and ADA on Coinbase against the Grayscale and iShares spot ETFs: premiums, fee drag, return statistics, a what-if simulator, honest forecasts and a Cardano epoch tracker." />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%230d9488%22/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,135 +20,154 @@
       })();
     </script>
     <link rel="stylesheet" href="assets/css/site.css" />
-    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+    <!-- cartesian partial bundle: about a third of the full Plotly download -->
+    <script src="https://cdn.plot.ly/plotly-cartesian-2.35.2.min.js" charset="utf-8" defer></script>
   </head>
   <body>
-    <nav class="navbar" role="navigation" aria-label="Main Navigation">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
       <a class="navbar__brand" href="#overview">Crypto Tracking</a>
       <div class="navbar__links">
         <a href="#overview" data-tab="overview">overview</a>
-        <a href="#trusts" data-tab="trusts">trusts</a>
-        <a href="#prices" data-tab="prices">prices</a>
+        <a href="#trusts" data-tab="trusts">funds</a>
         <a href="#analysis" data-tab="analysis">analysis</a>
-        <a href="#cardano" data-tab="cardano">cardano</a>
-        <a href="https://github.com/dmhenke/Crypto_Tracking_Fun"><i class="fa-brands fa-github"></i></a>
+        <a href="#simulator" data-tab="simulator">simulator</a>
+        <a href="#data" data-tab="data">data</a>
+        <a href="https://github.com/dmhenke/Crypto_Tracking_Fun" aria-label="GitHub repository"><i class="fa-brands fa-github" aria-hidden="true"></i></a>
         <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle light, dark, or system color theme" title="Toggle theme">
           <span id="theme-icon" aria-hidden="true">&#9788;</span>
         </button>
       </div>
     </nav>
 
+    <div class="banner" id="banner" hidden></div>
+
     <header class="page-header wide">
-      <span class="page-header__eyebrow"><i class="fa-solid fa-chart-line"></i> Coinbase &bull; NYSE &bull; updated daily</span>
-      <h1>Bitcoin, Ethereum and Cardano vs. the Grayscale trusts</h1>
+      <span class="page-header__eyebrow"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Coinbase &bull; NYSE &bull; updated daily</span>
+      <h1>Crypto on Coinbase vs. the spot crypto ETFs</h1>
       <p class="subtitle">
-        How the coins on Coinbase compare with the GBTC and ETHE trusts since a reference date you choose, how closely the
-        trusts track their coins, and where the current Cardano epoch stands. Every statistic on the analysis tab is
-        recomputed in your browser as you change the inputs.
+        Bitcoin, Ethereum, Solana and Cardano against the Grayscale (GBTC, ETHE) and iShares (IBIT, ETHA) funds:
+        what each returned since a reference date you choose, how far the funds traded from their holdings, what the fees cost,
+        and how the returns relate. Every statistic is recomputed in your browser as you change the inputs, and every
+        chart's data can be downloaded.
       </p>
       <div class="header-meta">
-        <span><i class="fa-regular fa-calendar"></i> Crypto through <strong id="meta-crypto">–</strong></span>
-        <span><i class="fa-solid fa-landmark"></i> NYSE through <strong id="meta-nyse">–</strong></span>
-        <span><i class="fa-solid fa-gears"></i> Pipeline ran <strong id="meta-run">–</strong></span>
-        <span><i class="fa-solid fa-database"></i> Coinbase Exchange &amp; Yahoo Finance</span>
+        <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> Crypto through <strong id="meta-crypto">–</strong></span>
+        <span><i class="fa-solid fa-landmark" aria-hidden="true"></i> NYSE through <strong id="meta-nyse">–</strong></span>
+        <span><i class="fa-solid fa-gears" aria-hidden="true"></i> Pipeline ran <strong id="meta-run">–</strong></span>
+        <label class="toggle-inline"><input type="checkbox" id="evToggle" checked /> <i class="fa-solid fa-flag" aria-hidden="true"></i> Event markers</label>
       </div>
     </header>
 
-    <div class="container wide">
-      <div class="tabs" role="tablist">
-        <button class="tab-button" data-tab="overview"><i class="fa-solid fa-gauge-high"></i> Overview</button>
-        <button class="tab-button" data-tab="trusts"><i class="fa-solid fa-scale-balanced"></i> Trusts</button>
-        <button class="tab-button" data-tab="prices"><i class="fa-solid fa-chart-area"></i> Prices</button>
-        <button class="tab-button" data-tab="analysis"><i class="fa-solid fa-flask"></i> Analysis</button>
-        <button class="tab-button" data-tab="cardano"><i class="fa-solid fa-cube"></i> Cardano</button>
+    <main class="container wide" id="main">
+      <div class="tabs" role="tablist" aria-label="Dashboard sections">
+        <button class="tab-button" role="tab" data-tab="overview" id="t-overview" aria-controls="tab-overview"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i> Overview</button>
+        <button class="tab-button" role="tab" data-tab="trusts" id="t-trusts" aria-controls="tab-trusts"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i> Funds</button>
+        <button class="tab-button" role="tab" data-tab="prices" id="t-prices" aria-controls="tab-prices"><i class="fa-solid fa-chart-area" aria-hidden="true"></i> Prices</button>
+        <button class="tab-button" role="tab" data-tab="analysis" id="t-analysis" aria-controls="tab-analysis"><i class="fa-solid fa-flask" aria-hidden="true"></i> Analysis</button>
+        <button class="tab-button" role="tab" data-tab="risk" id="t-risk" aria-controls="tab-risk"><i class="fa-solid fa-table-cells" aria-hidden="true"></i> Risk</button>
+        <button class="tab-button" role="tab" data-tab="simulator" id="t-simulator" aria-controls="tab-simulator"><i class="fa-solid fa-sack-dollar" aria-hidden="true"></i> Simulator</button>
+        <button class="tab-button" role="tab" data-tab="forecast" id="t-forecast" aria-controls="tab-forecast"><i class="fa-solid fa-bullseye" aria-hidden="true"></i> Forecast</button>
+        <button class="tab-button" role="tab" data-tab="cardano" id="t-cardano" aria-controls="tab-cardano"><i class="fa-solid fa-cube" aria-hidden="true"></i> Cardano</button>
+        <button class="tab-button" role="tab" data-tab="data" id="t-data" aria-controls="tab-data"><i class="fa-solid fa-database" aria-hidden="true"></i> Data</button>
       </div>
 
-      <!-- ============================ OVERVIEW ============================ -->
-      <section class="tab-content" id="tab-overview">
-        <div class="stat-grid" id="kpis"></div>
+      <!-- ================================ OVERVIEW ================================ -->
+      <section class="tab-content" id="tab-overview" role="tabpanel" aria-labelledby="t-overview">
+        <div class="content">
+          <h2>Today's brief</h2>
+          <p class="lead">Written by the daily pipeline. Each move is compared with that asset's own last 90 daily moves, so a 2% move counts as large for a fund and small for Solana.</p>
+          <ul class="brief" id="brief"></ul>
+        </div>
+        <div class="kpi-grid" id="kpis"></div>
         <div class="content">
           <h2>Growth since a reference date</h2>
-          <p class="lead">Each series is divided by its last close on or before the reference date, so 1.0 is break-even. Weekend dates roll back to Friday, as in the original R scripts.</p>
+          <p class="lead">Each series is divided by its last close on or before the reference date, so 1.0 is break-even. Funds are dotted lines; coins are solid.</p>
           <div class="toolbar">
             <label>Reference date <input type="date" id="refDate" /></label>
             <div class="chip-row" id="foldAssets"></div>
           </div>
           <div class="toolbar">
-            <label><input type="checkbox" id="totalRet" checked /> Trusts as total return (distributions reinvested)</label>
+            <label><input type="checkbox" id="totalRet" checked /> Funds as <span class="tip" tabindex="0" data-tip="Price plus any cash distributions reinvested. ETHE pays out staking rewards monthly; the other funds pay nothing, so for them it equals the price.">total return</span></label>
             <label><input type="checkbox" id="foldLog" /> Log scale</label>
           </div>
-          <div id="foldChart" class="chart"></div>
+          <div id="foldChart" class="chart chart--lg"></div><p class="sr-only" id="foldChart-sr"></p>
           <div class="table-wrap"><table class="data-table" id="foldTbl"></table></div>
         </div>
       </section>
 
-      <!-- ============================ TRUSTS ============================ -->
-      <section class="tab-content" id="tab-trusts">
+      <!-- ================================ FUNDS ================================ -->
+      <section class="tab-content" id="tab-trusts" role="tabpanel" aria-labelledby="t-trusts">
         <div class="content">
-          <h2>Coin minus trust</h2>
-          <p class="lead">The coin's fold change minus its trust's fold change, from the reference date on the overview tab (<span class="mono" id="spreadRef"></span>). Above zero, the coin on Coinbase outperformed the trust. Trading days only.</p>
-          <div id="spreadChart" class="chart"></div>
-          <div class="callout callout-info">
-            <strong class="callout-title">Why the gap moves</strong>
-            Before January 2024 GBTC was a closed-end trust that traded at a premium and later at a deep discount to its bitcoin, which drives most of the early swings.
-            Since its conversion to an ETF, the gap mostly reflects the 1.5% annual fee and the hours between the NYSE close and the Coinbase daily close.
-          </div>
+          <h2>Premium or discount to holdings</h2>
+          <p class="lead">How far each Grayscale fund traded from the value of the crypto it held, at the NYSE close. Positive means investors paid more than the holdings were worth.</p>
+          <div class="result-cards" id="premCards"></div>
+          <div id="premChart" class="chart chart--lg"></div><p class="sr-only" id="premChart-sr"></p>
+          <div id="premMethod"></div>
+        </div>
+        <div class="content">
+          <h2>What the fee costs: Grayscale vs. iShares</h2>
+          <p class="lead">Both funds hold the same coin, so the gap between them is mostly the fee difference. The drag is measured from the data, starting a month after the later fund launched (once the Grayscale fund's leftover discount had closed), and compared with what the fee schedules imply.</p>
+          <div class="filter-bar" id="dragChips"></div>
+          <div class="result-cards" id="dragCards"></div>
+          <div id="dragChart" class="chart"></div><p class="sr-only" id="dragChart-sr"></p>
+          <div id="dragNote"></div>
+        </div>
+        <div class="content">
+          <h2>Coin minus fund</h2>
+          <p class="lead">The coin's fold change minus each fund's, from the overview reference date (<span class="mono" id="spreadRef"></span>). Above zero, the coin on Coinbase outperformed the fund.</p>
+          <div id="spreadChart" class="chart"></div><p class="sr-only" id="spreadChart-sr"></p>
         </div>
         <div class="content">
           <h2>Ratio explorer</h2>
           <div class="filter-bar" id="ratioChips"></div>
           <div class="toolbar"><label><input type="checkbox" id="ratioLog" /> Log scale</label></div>
-          <div id="ratioChart" class="chart"></div>
+          <div id="ratioChart" class="chart"></div><p class="sr-only" id="ratioChart-sr"></p>
           <p class="lead" id="ratioNote" style="margin-top:0.75rem"></p>
         </div>
       </section>
 
-      <!-- ============================ PRICES ============================ -->
-      <section class="tab-content" id="tab-prices">
+      <!-- ================================ PRICES ================================ -->
+      <section class="tab-content" id="tab-prices" role="tabpanel" aria-labelledby="t-prices">
         <div class="content">
           <h2>Price, volume and drawdown</h2>
           <div class="filter-bar" id="priceChips"></div>
           <div class="toolbar"><label><input type="checkbox" id="priceLog" checked /> Log scale</label></div>
-          <div id="priceChart" class="chart" style="height:560px"></div>
+          <div id="priceChart" class="chart" style="height:580px"></div><p class="sr-only" id="priceChart-sr"></p>
           <div class="stat-grid" id="priceStats"></div>
         </div>
       </section>
 
-      <!-- ============================ ANALYSIS ============================ -->
-      <section class="tab-content" id="tab-analysis">
+      <!-- ================================ ANALYSIS ================================ -->
+      <section class="tab-content" id="tab-analysis" role="tabpanel" aria-labelledby="t-analysis">
         <div class="content">
           <h2>Return relationship explorer</h2>
-          <p class="lead">Pick two assets, a window, a return frequency and a confidence level. Log returns are taken on the dates both assets traded. Statistics are recomputed as you change the inputs.</p>
+          <p class="lead">Pick two assets, a window, a return frequency, a confidence level and how the intervals are computed. Log returns are taken on dates both assets have a price.</p>
           <div class="analysis-grid">
             <div class="calc-controls">
               <div class="calc-group">
-                <label>Asset (y) <span class="val" id="lblY"></span></label>
-                <div class="row"><select id="selY"></select><button class="filter-btn" id="swap" title="Swap y and x"><i class="fa-solid fa-right-left"></i></button></div>
+                <label for="selY">Asset (y) <span class="val" id="lblY"></span></label>
+                <div class="row"><select id="selY" class="field"></select><button type="button" class="filter-btn" id="swap" title="Swap y and x" aria-label="Swap y and x"><i class="fa-solid fa-right-left" aria-hidden="true"></i></button></div>
               </div>
-              <div class="calc-group">
-                <label>Benchmark (x)</label>
-                <select id="selX"></select>
-              </div>
+              <div class="calc-group"><label for="selX">Benchmark (x)</label><select id="selX" class="field"></select></div>
               <div class="calc-group">
                 <label>Window</label>
                 <div class="chip-row" id="winChips"></div>
-                <div class="row"><input type="date" id="winFrom" /><input type="date" id="winTo" /></div>
+                <div class="row"><input type="date" id="winFrom" aria-label="Window start" /><input type="date" id="winTo" aria-label="Window end" /></div>
+              </div>
+              <div class="calc-group"><label>Return frequency</label><div class="chip-row" id="freqChips"></div></div>
+              <div class="calc-group"><label>Confidence level</label><div class="chip-row" id="lvlChips"></div></div>
+              <div class="calc-group">
+                <label>Intervals</label><div class="chip-row" id="ciChips"></div>
+                <span class="hint" id="ciHint"></span>
               </div>
               <div class="calc-group">
-                <label>Return frequency</label>
-                <div class="chip-row" id="freqChips"></div>
-                <span class="hint">Weekly and monthly use the last close in each period, which reduces the bias from the NYSE and Coinbase closing at different times.</span>
-              </div>
-              <div class="calc-group">
-                <label>Confidence level</label>
-                <div class="chip-row" id="lvlChips"></div>
-              </div>
-              <div class="calc-group">
-                <label>Rolling window <span class="val" id="rollVal"></span></label>
+                <label for="roll">Rolling window <span class="val" id="rollVal"></span></label>
                 <input type="range" id="roll" min="10" max="250" step="5" value="60" />
               </div>
               <div class="calc-group">
-                <label style="justify-content:flex-start;gap:0.4rem;font-weight:500"><input type="checkbox" id="anTR" checked style="accent-color:var(--global-theme-color)" /> Trusts as total return</label>
+                <label class="toggle-inline" style="font-weight:500;justify-content:flex-start"><input type="checkbox" id="anNY" checked /> Coins at 16:00 ET when paired with a fund</label>
+                <label class="toggle-inline" style="font-weight:500;justify-content:flex-start"><input type="checkbox" id="anTR" checked /> Funds as total return</label>
               </div>
             </div>
             <div>
@@ -157,60 +176,134 @@
             </div>
           </div>
         </div>
-
         <div class="two-col">
           <div class="content">
             <h2>Returns: y against x</h2>
-            <p class="lead">Each point is one period. The line is the OLS fit; the band is the confidence interval for the mean response.</p>
-            <div id="scatter" class="chart chart--sm"></div>
+            <p class="lead">Each point is one period. The line is the least-squares fit; the band is the confidence interval for the mean response.</p>
+            <div id="scatter" class="chart chart--sm"></div><p class="sr-only" id="scatter-sr"></p>
           </div>
           <div class="content">
             <h2>Distribution of y returns</h2>
-            <p class="lead">Histogram with a fitted normal density. Heavy tails make normal-theory intervals somewhat optimistic.</p>
-            <div id="hist" class="chart chart--sm"></div>
+            <p class="lead">Histogram with a fitted normal density. Heavy tails are why the bootstrap and Newey-West options exist.</p>
+            <div id="hist" class="chart chart--sm"></div><p class="sr-only" id="hist-sr"></p>
           </div>
         </div>
-
         <div class="content">
           <h2>Rolling correlation and beta</h2>
-          <p class="lead">Computed over the rolling window chosen above, with a Fisher-z confidence band for the correlation.</p>
-          <div id="rollChart" class="chart"></div>
+          <div id="rollChart" class="chart"></div><p class="sr-only" id="rollChart-sr"></p>
         </div>
-
+        <div class="content">
+          <h2>Timing: does one market lead the other?</h2>
+          <p class="lead">Correlation of x's daily return with y's return k days later. Bars above zero at positive k mean x's moves show up in y a day or more later. Comparing the two price-timing choices shows how much of the lag is just the 16:00 ET vs. 00:00 UTC closing times.</p>
+          <div id="leadChart" class="chart chart--sm"></div><p class="sr-only" id="leadChart-sr"></p>
+          <div id="leadNote"></div>
+        </div>
+        <div class="content">
+          <h2>Day-of-week effects in y</h2>
+          <p class="lead">Average daily log return by weekday, with confidence intervals and a one-way ANOVA test. Fund returns on Monday include the whole weekend's crypto move.</p>
+          <div class="toolbar"><label><input type="checkbox" id="wdBonf" checked /> <span class="tip" tabindex="0" data-tip="With several weekdays, one will look 'significant' by chance more often than the nominal rate. Bonferroni widens each interval to keep the family-wise error at the chosen level.">Bonferroni-adjusted intervals</span></label></div>
+          <div class="two-col">
+            <div><div id="wdChart" class="chart chart--sm"></div><p class="sr-only" id="wdChart-sr"></p></div>
+            <div><div class="table-wrap"><table class="data-table" id="wdTbl"></table></div><div id="wdNote"></div></div>
+          </div>
+        </div>
         <div class="content">
           <h2>Drawdown in the window</h2>
-          <p class="lead">The percentage below the running peak within the selected window.</p>
-          <div id="ddChart" class="chart chart--sm"></div>
+          <div id="ddChart" class="chart chart--sm"></div><p class="sr-only" id="ddChart-sr"></p>
         </div>
-
         <div class="content">
           <h2>Method</h2>
           <ul>
-            <li><strong>Returns:</strong> log returns on the dates both series have a close; weekly and monthly returns use the last matched close in each ISO week or calendar month.</li>
-            <li><strong>Beta and alpha:</strong> ordinary least squares of y on x, with t intervals on n − 2 degrees of freedom. Alpha and mean returns are annualized by the observed number of periods per year in the window.</li>
-            <li><strong>Correlation:</strong> Pearson r with a Fisher-z interval, as in R's <code>cor.test</code>.</li>
-            <li><strong>Volatility:</strong> sample standard deviation × √(periods per year), with an exact χ² interval under normality.</li>
-            <li><strong>Caveats:</strong> returns are close to serially uncorrelated but heavy-tailed and volatility-clustered, so the intervals assume more regularity than the data have. Treat them as descriptive.</li>
-            <li><strong>Validation:</strong> <code>tests/validate_stats.R</code> checks the browser code against R's <code>lm</code>, <code>confint</code>, <code>cor.test</code>, <code>t.test</code> and <code>qchisq</code>. They agree to better than 1 part in 10<sup>8</sup>.</li>
+            <li><strong>Returns:</strong> log returns on dates both series have a price. Weekly and monthly returns use the last matched price in each week (Monday start) or calendar month.</li>
+            <li><strong>Normal theory:</strong> OLS t intervals for beta and alpha, a Fisher-z interval for correlation, χ² intervals for volatility, and t intervals for the mean, as in R's <code>lm</code>, <code>cor.test</code> and <code>t.test</code>.</li>
+            <li><strong>Newey-West:</strong> heteroskedasticity- and autocorrelation-consistent standard errors (Bartlett kernel, lag ⌊4(n/100)<sup>2/9</sup>⌋) for beta, alpha and the mean. Correlation and volatility fall back to normal theory.</li>
+            <li><strong>Block bootstrap:</strong> 1,000 moving-block resamples (block length ≈ n<sup>1/3</sup>, fixed seed) with percentile intervals for every statistic. It makes no normality assumption and keeps short-run dependence.</li>
+            <li><strong>Validation:</strong> <code>tests/validate_stats.R</code> checks this code against R (<code>lm</code>, <code>confint</code>, <code>cor.test</code>, <code>t.test</code>, <code>anova</code>, <code>sandwich::NeweyWest</code>, <code>pt</code>, <code>pf</code>, <code>qchisq</code>, <code>prop.test</code>) on every push.</li>
           </ul>
         </div>
       </section>
 
-      <!-- ============================ CARDANO ============================ -->
-      <section class="tab-content" id="tab-cardano">
+      <!-- ================================ RISK ================================ -->
+      <section class="tab-content" id="tab-risk" role="tabpanel" aria-labelledby="t-risk">
+        <div class="content">
+          <h2>Correlation matrix</h2>
+          <p class="lead">Pairwise Pearson correlation of log returns over the chosen window, each pair on its own matched dates. Hover a cell for the 95% interval and the number of observations.</p>
+          <div class="toolbar"><div class="chip-row" id="hmWin"></div><div class="chip-row" id="hmFreq"></div></div>
+          <div class="toolbar"><div class="chip-row" id="hmAssets"></div></div>
+          <div id="heat" class="chart chart--heat"></div><p class="sr-only" id="heat-sr"></p>
+        </div>
+        <div class="content">
+          <h2>Rolling volatility</h2>
+          <p class="lead">Annualized standard deviation of daily log returns over a trailing window (√365 for coins, √252 for funds).</p>
+          <div class="toolbar"><div class="chip-row" id="rvAssets"></div><div class="chip-row" id="rvWin"></div></div>
+          <div id="rvChart" class="chart"></div><p class="sr-only" id="rvChart-sr"></p>
+          <div class="table-wrap"><table class="data-table" id="rvTbl"></table></div>
+        </div>
+      </section>
+
+      <!-- ================================ SIMULATOR ================================ -->
+      <section class="tab-content" id="tab-simulator" role="tabpanel" aria-labelledby="t-simulator">
+        <div class="content">
+          <h2>What if I had invested?</h2>
+          <p class="lead">A hypothetical, using daily closing prices: no taxes, no slippage, fractional units allowed. It shows how the choice of vehicle (coin vs. fund, high-fee vs. low-fee) changes the outcome. It is not a recommendation.</p>
+          <div class="analysis-grid">
+            <div class="calc-controls">
+              <div class="calc-group"><label>Assets</label><div class="chip-row" id="simAssets"></div></div>
+              <div class="calc-group"><label>Plan</label><div class="chip-row" id="simMode"></div></div>
+              <div class="calc-group"><label for="simAmt">Amount per purchase ($)</label><input type="number" class="num-input" id="simAmt" min="1" step="1" value="100" /></div>
+              <div class="calc-group"><label>Period</label><div class="row"><input type="date" id="simFrom" aria-label="Start date" /><input type="date" id="simTo" aria-label="End date" /></div></div>
+              <div class="calc-group"><label for="simFee">Trading cost per purchase <span class="val" id="simFeeVal"></span></label><input type="range" id="simFee" min="0" max="2" step="0.05" value="0" /></div>
+              <div class="calc-group"><label class="toggle-inline" style="font-weight:500;justify-content:flex-start"><input type="checkbox" id="simTR" checked /> Reinvest fund distributions</label></div>
+            </div>
+            <div>
+              <div class="table-wrap" style="margin-top:0"><table class="data-table" id="simTbl"></table></div>
+              <div id="simNote"></div>
+            </div>
+          </div>
+          <div id="simChart" class="chart chart--lg"></div><p class="sr-only" id="simChart-sr"></p>
+        </div>
+      </section>
+
+      <!-- ================================ FORECAST ================================ -->
+      <section class="tab-content" id="tab-forecast" role="tabpanel" aria-labelledby="t-forecast">
+        <div class="content">
+          <h2>Forecast ranges, scored honestly</h2>
+          <p class="lead">These models don't predict direction. They give a range the price is likely to land in, and every past forecast is scored against what actually happened. Trust a range only as far as its measured coverage.</p>
+          <div class="toolbar"><div class="chip-row" id="fcAsset"></div></div>
+          <div class="toolbar"><div class="chip-row" id="fcH"></div><div class="chip-row" id="fcM"></div></div>
+          <div class="result-cards" id="fcCards"></div>
+          <div id="fcChart" class="chart chart--lg"></div><p class="sr-only" id="fcChart-sr"></p>
+        </div>
+        <div class="content">
+          <h2>Backtest scoreboard</h2>
+          <p class="lead">Rolling-origin backtest over the whole history: at each non-overlapping origin, each model forecasts using only data available then. Coverage is the share of actual prices that landed inside the stated range; a well-calibrated 80% range covers about 80%. Coverage intervals are Wilson 95% intervals.</p>
+          <div class="table-wrap"><table class="data-table" id="fcTbl"></table></div>
+          <div id="fcCal" class="chart chart--sm"></div><p class="sr-only" id="fcCal-sr"></p>
+          <div class="callout callout-warning">
+            <strong class="callout-title">Why the earlier ETH forecast was removed</strong>
+            This project previously published a Prophet-based weekly ETH forecast (26 forecasts, 2025-12-26 to 2026-06-19).
+            Only 2 of its 26 predicted ranges contained the actual price a week later (8%). Its average error was $1,135, against $136 for simply assuming
+            no change. Nineteen of the 26 ranges sat entirely above the current price, and one predicted a negative price. Those files are kept in
+            <code>archive/</code> for the record. This tab replaces them with simple models whose accuracy is measured and published.
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================ CARDANO ================================ -->
+      <section class="tab-content" id="tab-cardano" role="tabpanel" aria-labelledby="t-cardano">
         <div class="two-col">
           <div class="content">
             <h2>Current epoch</h2>
             <p class="lead">Epochs last 5 days and roll over at 21:44:51 UTC. Epoch 532 began 2025-01-04 21:44:51 UTC.</p>
-            <div class="epoch-num" id="epochNum">–</div>
-            <div class="progress"><div id="epochBar" style="width:0%"></div></div>
+            <div class="epoch-num" id="epochNum" aria-live="polite">–</div>
+            <div class="progress" role="progressbar" aria-label="Epoch progress" id="epochProg"><div id="epochBar" style="width:0%"></div></div>
             <p class="lead" id="epochTxt"></p>
             <div class="table-wrap scroll"><table class="data-table" id="epochTbl"></table></div>
           </div>
           <div class="content">
             <h2>Staking rewards</h2>
             <p class="lead">Drop wallet <code>Rewards-*.csv</code> exports here. Files are read only in your browser and are never uploaded.</p>
-            <div class="drop" id="drop"><i class="fa-solid fa-file-csv"></i>&nbsp; Drop CSV files or click to choose<input type="file" id="fileIn" accept=".csv" multiple hidden /></div>
+            <div class="drop" id="drop" role="button" tabindex="0"><i class="fa-solid fa-file-csv" aria-hidden="true"></i>&nbsp; Drop CSV files or click to choose<input type="file" id="fileIn" accept=".csv" multiple hidden /></div>
             <div class="toolbar" id="rwControls" hidden>
               <label>Value <select id="rwCol"></select></label>
               <label>Epoch from <select id="rwDate"></select></label>
@@ -221,16 +314,52 @@
           </div>
         </div>
       </section>
-    </div>
+
+      <!-- ================================ DATA ================================ -->
+      <section class="tab-content" id="tab-data" role="tabpanel" aria-labelledby="t-data">
+        <div class="content">
+          <h2>Data freshness</h2>
+          <p class="lead">Status of each source on the last pipeline run, and how current each series is. A banner appears at the top of the page if the data are more than two days old.</p>
+          <div class="table-wrap"><table class="data-table" id="freshTbl"></table></div>
+        </div>
+        <div class="content">
+          <h2>Downloads</h2>
+          <p class="lead">The full daily series behind the page. Every chart also has a <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> button in its toolbar that downloads exactly what it shows.</p>
+          <div class="filter-bar" id="dlChips"></div>
+        </div>
+        <div class="content">
+          <h2>Funds and fees</h2>
+          <div class="table-wrap"><table class="data-table" id="feeTbl"></table></div>
+        </div>
+        <div class="content">
+          <h2>Corrections applied to source data</h2>
+          <div id="fixes"></div>
+        </div>
+        <div class="content">
+          <h2>Glossary</h2>
+          <dl class="glossary" id="glossary"></dl>
+        </div>
+      </section>
+    </main>
 
     <footer class="site-footer" role="contentinfo">
       <div class="container" style="padding-bottom: 0;">
-        <p>&copy; 2026 David M. Henke. Data from the Coinbase Exchange public API and Yahoo Finance, refreshed daily by an R pipeline in GitHub Actions. Not investment advice.</p>
-        <p><a href="https://github.com/dmhenke/Crypto_Tracking_Fun">GitHub repository</a> &bull; <a href="data/summary.json">summary.json</a> &bull; <a href="data/prices.json">prices.json</a></p>
+        <p>&copy; 2026 David M. Henke. Data from the Coinbase Exchange public API and Yahoo Finance, refreshed daily by an R pipeline in GitHub Actions. Fund premiums are estimates. Not investment advice.</p>
+        <p><a href="https://github.com/dmhenke/Crypto_Tracking_Fun">GitHub repository</a> &bull; <a href="#data">Data &amp; methods</a></p>
       </div>
     </footer>
 
-    <script src="assets/js/stats.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/stats.js" defer></script>
+    <script src="assets/js/core.js" defer></script>
+    <script src="assets/js/tab-overview.js" defer></script>
+    <script src="assets/js/tab-funds.js" defer></script>
+    <script src="assets/js/tab-prices.js" defer></script>
+    <script src="assets/js/tab-analysis.js" defer></script>
+    <script src="assets/js/tab-risk.js" defer></script>
+    <script src="assets/js/tab-simulator.js" defer></script>
+    <script src="assets/js/tab-forecast.js" defer></script>
+    <script src="assets/js/tab-cardano.js" defer></script>
+    <script src="assets/js/tab-data.js" defer></script>
+    <script src="assets/js/main.js" defer></script>
   </body>
 </html>

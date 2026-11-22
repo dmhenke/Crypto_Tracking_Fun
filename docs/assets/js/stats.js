@@ -123,6 +123,102 @@
     return { series: dd, max: mdd, peak: mp, trough: mt };
   }
 
-  return { qnorm: qnorm, qt: qt, qchisq: qchisq, mean: mean, variance: variance, sd: sd, moments: moments,
-           meanCI: meanCI, sdCI: sdCI, ols: ols, corCI: corCI, logReturns: logReturns, rolling: rolling, drawdown: drawdown };
+  // ---- distribution functions (for p-values) -------------------------------------
+  function betacf(a, b, x) {                  // continued fraction for the incomplete beta (Lentz)
+    var qab = a + b, qap = a + 1, qam = a - 1, c = 1, d = 1 - qab * x / qap, h, m, m2, aa, del;
+    if (Math.abs(d) < 1e-300) d = 1e-300; d = 1 / d; h = d;
+    for (m = 1; m <= 1000; m++) {
+      m2 = 2 * m; aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+      d = 1 + aa * d; if (Math.abs(d) < 1e-300) d = 1e-300; c = 1 + aa / c; if (Math.abs(c) < 1e-300) c = 1e-300; d = 1 / d; h *= d * c;
+      aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+      d = 1 + aa * d; if (Math.abs(d) < 1e-300) d = 1e-300; c = 1 + aa / c; if (Math.abs(c) < 1e-300) c = 1e-300; d = 1 / d; del = d * c; h *= del;
+      if (Math.abs(del - 1) < 1e-15) break;
+    }
+    return h;
+  }
+  function pbeta(x, a, b) {                   // regularized incomplete beta I_x(a, b)
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    var bt = Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x));
+    return x < (a + 1) / (a + b + 2) ? bt * betacf(a, b, x) / a : 1 - bt * betacf(b, a, 1 - x) / b;
+  }
+  function pt2(t, df) { return pbeta(df / (df + t * t), df / 2, 0.5); }          // two-sided p for |T| >= |t|
+  function pf(F, d1, d2) { return F <= 0 ? 1 : 1 - pbeta(d1 * F / (d1 * F + d2), d1 / 2, d2 / 2); } // upper tail
+
+  // ---- robust inference ------------------------------------------------------------
+  // OLS with Newey-West (Bartlett kernel) covariance; matches sandwich::NeweyWest(fit, lag, prewhite = FALSE, adjust = FALSE).
+  function nwLag(n) { return Math.floor(4 * Math.pow(n / 100, 2 / 9)); }
+  function olsHAC(x, y, level, lag) {
+    var o = ols(x, y, level), n = x.length, L = lag == null ? nwLag(n) : lag;
+    var e = x.map(function (xi, i) { return y[i] - o.alpha - o.beta * xi; });
+    var S = [[0, 0], [0, 0]];                 // meat: sum_l w_l sum_t (u_t u_{t-l}' + u_{t-l} u_t'), u_t = e_t [1, x_t]
+    for (var l = 0; l <= L; l++) {
+      var w = l === 0 ? 1 : 1 - l / (L + 1), s00 = 0, s01 = 0, s10 = 0, s11 = 0;
+      for (var t = l; t < n; t++) {
+        var a0 = e[t], a1 = e[t] * x[t], b0 = e[t - l], b1 = e[t - l] * x[t - l];
+        s00 += a0 * b0; s01 += a0 * b1; s10 += a1 * b0; s11 += a1 * b1;
+      }
+      if (l === 0) { S[0][0] += s00; S[0][1] += s01; S[1][0] += s10; S[1][1] += s11; }
+      else { S[0][0] += w * 2 * s00; S[0][1] += w * (s01 + s10); S[1][0] += w * (s10 + s01); S[1][1] += w * 2 * s11; }
+    }
+    var sx = 0, sxx = 0; for (var i = 0; i < n; i++) { sx += x[i]; sxx += x[i] * x[i]; }
+    var det = n * sxx - sx * sx, B = [[sxx / det, -sx / det], [-sx / det, n / det]];   // (X'X)^-1
+    var M = [[0, 0], [0, 0]], V = [[0, 0], [0, 0]], r, c, k;
+    for (r = 0; r < 2; r++) for (c = 0; c < 2; c++) for (k = 0; k < 2; k++) M[r][c] += B[r][k] * S[k][c];
+    for (r = 0; r < 2; r++) for (c = 0; c < 2; c++) for (k = 0; k < 2; k++) V[r][c] += M[r][k] * B[k][c];
+    var tq = qt(1 - (1 - level) / 2, n - 2), sea = Math.sqrt(V[0][0]), seb = Math.sqrt(V[1][1]);
+    return Object.assign({}, o, { lag: L, se_alpha: sea, se_beta: seb, alpha_lo: o.alpha - tq * sea, alpha_hi: o.alpha + tq * sea,
+                                  beta_lo: o.beta - tq * seb, beta_hi: o.beta + tq * seb, p_beta0: pt2(o.beta / seb, n - 2) });
+  }
+  // Seeded RNG (mulberry32) so bootstrap results are reproducible for a given input.
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  // Moving-block bootstrap of paired observations; returns percentile intervals for each statistic.
+  function blockBootstrap(n, stats, level, B, blockLen, seed) {
+    B = B || 1000; blockLen = blockLen || Math.max(1, Math.round(Math.pow(n, 1 / 3))); var R = rng(seed || 12345);
+    // stats: array of functions idx -> number, or one function idx -> array of numbers
+    var multi = typeof stats === "function", idx = new Array(n);
+    var K = multi ? stats(Array.from({ length: n }, function (_, i) { return i; })).length : stats.length;
+    var draws = Array.from({ length: K }, function () { return []; });
+    for (var b = 0; b < B; b++) {
+      for (var i = 0; i < n; ) { var s = Math.floor(R() * (n - blockLen + 1)); for (var j = 0; j < blockLen && i < n; j++) idx[i++] = s + j; }
+      if (multi) { var v = stats(idx); for (var k = 0; k < K; k++) draws[k].push(v[k]); }
+      else for (var k2 = 0; k2 < K; k2++) draws[k2].push(stats[k2](idx));
+    }
+    var a = (1 - level) / 2;
+    return draws.map(function (d) { d.sort(function (p, q) { return p - q; });
+      var q = function (p) { var h = (d.length - 1) * p, lo = Math.floor(h); return d[lo] + (h - lo) * ((d[Math.min(lo + 1, d.length - 1)]) - d[lo]); };
+      return { lo: q(a), hi: q(1 - a) }; });
+  }
+
+  // Newey-West standard error of a mean (long-run variance, Bartlett weights).
+  function hacMean(y, level, lag) {
+    var n = y.length, m = mean(y), L = lag == null ? nwLag(n) : lag, lr = 0;
+    for (var l = 0; l <= L; l++) { var g = 0; for (var t = l; t < n; t++) g += (y[t] - m) * (y[t - l] - m); g /= n; lr += (l === 0 ? 1 : 2 * (1 - l / (L + 1))) * g; }
+    var se = Math.sqrt(lr / n), tq = qt(1 - (1 - level) / 2, n - 1);
+    return { est: m, se: se, lo: m - tq * se, hi: m + tq * se, lag: L };
+  }
+  // Wilson score interval for a proportion (e.g. forecast-interval coverage).
+  function wilson(k, n, level) {
+    var z = qnorm(1 - (1 - level) / 2), p = k / n, d = 1 + z * z / n, c = (p + z * z / (2 * n)) / d, h = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d;
+    return { est: p, lo: c - h, hi: c + h };
+  }
+
+  // ---- grouped comparisons ------------------------------------------------------------
+  function anova1(groups) {                    // one-way ANOVA; groups: array of numeric arrays
+    var all = [].concat.apply([], groups), N = all.length, k = groups.length, gm = mean(all), ssb = 0, ssw = 0;
+    groups.forEach(function (g) { var m = mean(g); ssb += g.length * (m - gm) * (m - gm); g.forEach(function (v) { ssw += (v - m) * (v - m); }); });
+    var d1 = k - 1, d2 = N - k, F = (ssb / d1) / (ssw / d2);
+    return { F: F, df1: d1, df2: d2, p: pf(F, d1, d2) };
+  }
+  function crossCorr(x, y, lags, level) {      // r_k = cor(x_t, y_{t+k}); positive k: x leads y
+    return lags.map(function (k) {
+      var xs = [], ys = [];
+      for (var t = 0; t < x.length; t++) { var u = t + k; if (u >= 0 && u < y.length) { xs.push(x[t]); ys.push(y[u]); } }
+      var c = corCI(xs, ys, level); return { lag: k, n: xs.length, r: c.est, lo: c.lo, hi: c.hi };
+    });
+  }
+
+  return { qnorm: qnorm, qt: qt, qchisq: qchisq, pbeta: pbeta, pt2: pt2, pf: pf, mean: mean, variance: variance, sd: sd, moments: moments,
+           meanCI: meanCI, sdCI: sdCI, ols: ols, olsHAC: olsHAC, nwLag: nwLag, corCI: corCI, blockBootstrap: blockBootstrap, rng: rng,
+           anova1: anova1, crossCorr: crossCorr, hacMean: hacMean, wilson: wilson, logReturns: logReturns, rolling: rolling, drawdown: drawdown };
 });

@@ -691,14 +691,8 @@ footer.site-footer p + p {
 /* =================================================================
  * Crypto Tracking additions (same tokens and idiom as above)
  * ================================================================= */
-:root {
-  --c-btc: #d97706; --c-gbtc: #92400e; --c-eth: #6366f1; --c-ethe: #3730a3; --c-ada: #0d9488;
-  --global-up: #059669; --global-down: #dc2626;
-}
-html[data-theme="dark"] {
-  --c-btc: #facc15; --c-gbtc: #f97316; --c-eth: #a5b4fc; --c-ethe: #818cf8; --c-ada: #2dd4bf;
-  --global-up: #34d399; --global-down: #f87171;
-}
+:root { --global-up: #059669; --global-down: #dc2626; }
+html[data-theme="dark"] { --global-up: #34d399; --global-down: #f87171; }
 .wide { max-width: 1180px; }
 .content > h2 + .lead { margin-top: -0.4rem; }
 .lead { color: var(--global-text-color-light); font-size: 0.95rem; margin-bottom: 1rem; max-width: 80ch; }
@@ -740,3 +734,36 @@ html[data-theme="dark"] {
 @media (max-width: 900px) {
   .two-col, .analysis-grid { grid-template-columns: 1fr; }
 }
+
+/* ----- Round 3: tooltips, banner, brief, accessibility ------------------------------ */
+.tip { border-bottom: 1px dotted var(--global-text-color-light); cursor: help; position: relative; }
+.tip:hover::after, .tip:focus::after {
+  content: attr(data-tip); position: absolute; left: 0; top: calc(100% + 6px); z-index: 50; width: max-content; max-width: 300px;
+  background: var(--global-card-bg-color); color: var(--global-text-color); border: 1px solid var(--global-divider-color);
+  border-radius: 6px; padding: 0.55rem 0.7rem; font: 400 0.8rem/1.45 Inter, sans-serif; letter-spacing: 0; text-transform: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12); white-space: normal;
+}
+.stat-card .tip:hover::after, .stat-card .tip:focus::after { font-family: Inter, sans-serif; }
+.sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip-link { position: absolute; left: -999px; top: 0.5rem; z-index: 200; background: var(--global-theme-color); color: var(--global-bg-color); padding: 0.4rem 0.8rem; border-radius: 6px; }
+.skip-link:focus { left: 0.5rem; }
+:focus-visible { outline: 2px solid var(--global-theme-color); outline-offset: 2px; }
+.banner { max-width: 1180px; margin: 0.75rem auto 0; padding: 0 1.5rem; }
+.banner .callout { margin: 0; }
+.brief { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.brief li { display: flex; gap: 0.6rem; align-items: baseline; font-size: 0.92rem; line-height: 1.5; }
+.brief li .badge { flex: 0 0 auto; }
+.toggle-inline { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+.toggle-inline input { accent-color: var(--global-theme-color); }
+.num-input { width: 100%; font: inherit; font-size: 0.88rem; padding: 0.4rem 0.55rem; border: 1px solid var(--global-divider-color); border-radius: 6px; background: var(--global-bg-color); color: var(--global-text-color); }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; margin: 0 0 1.5rem; }
+.kpi-grid .stat-card__val { font-size: 1.55rem; }
+.chart--lg { height: 520px; }
+.chart--heat { height: 520px; }
+.glossary dt { font-weight: 600; margin-top: 0.8rem; }
+.glossary dd { margin: 0.2rem 0 0 0; color: var(--global-text-color-light); font-size: 0.92rem; }
+.tabs { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: thin; }
+.tab-button { white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .tab-content.active { animation: none; } .progress > div { transition: none; } }
+.sub { color: var(--global-text-color-light); font-size: 0.8em; }
+#premCards { grid-template-columns: repeat(3, minmax(0, 1fr)); } @media (max-width: 700px) { #premCards { grid-template-columns: 1fr; } }

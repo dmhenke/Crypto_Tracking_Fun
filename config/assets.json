@@ -1,0 +1,191 @@
+{
+  "_comment": "Asset list for scripts/daily_update.R and the dashboard. Add an entry here to track a new asset; no code changes are needed. kind: coin | fund. Funds need an 'underlying' coin. Fee schedules, anchors and spin-offs were checked against issuer pages and SEC filings on 2026-11-22 (see 'sources').",
+  "start_date": "2021-01-01",
+  "reference_date": "2021-01-14",
+  "assets": [
+    {
+      "symbol": "BTC-USD",
+      "source": "coinbase",
+      "kind": "coin",
+      "label": "Bitcoin",
+      "short": "BTC",
+      "color": {
+        "light": "#b45309",
+        "dark": "#fbbf24"
+      },
+      "nyse_close": true
+    },
+    {
+      "symbol": "ETH-USD",
+      "source": "coinbase",
+      "kind": "coin",
+      "label": "Ethereum",
+      "short": "ETH",
+      "color": {
+        "light": "#4f46e5",
+        "dark": "#a5b4fc"
+      },
+      "nyse_close": true
+    },
+    {
+      "symbol": "SOL-USD",
+      "source": "coinbase",
+      "kind": "coin",
+      "label": "Solana",
+      "short": "SOL",
+      "color": {
+        "light": "#7c3aed",
+        "dark": "#c4b5fd"
+      },
+      "nyse_close": false
+    },
+    {
+      "symbol": "ADA-USD",
+      "source": "coinbase",
+      "kind": "coin",
+      "label": "Cardano",
+      "short": "ADA",
+      "color": {
+        "light": "#0f766e",
+        "dark": "#2dd4bf"
+      },
+      "nyse_close": false
+    },
+    {
+      "symbol": "GBTC",
+      "source": "yahoo",
+      "kind": "fund",
+      "label": "Grayscale Bitcoin Trust ETF",
+      "short": "GBTC",
+      "issuer": "Grayscale",
+      "underlying": "BTC-USD",
+      "etf_since": "2024-01-11",
+      "color": {
+        "light": "#7c2d12",
+        "dark": "#fb923c"
+      },
+      "fees": [
+        {
+          "from": "2013-09-25",
+          "rate": 0.02,
+          "note": "closed-end trust"
+        },
+        {
+          "from": "2024-01-11",
+          "rate": 0.015,
+          "note": "after ETF conversion"
+        }
+      ],
+      "anchor": {
+        "date": "2026-11-20",
+        "units_per_share": 0.00077105,
+        "source": "https://etfs.grayscale.com/gbtc"
+      },
+      "spinoffs": [
+        {
+          "date": "2024-07-31",
+          "fraction": 0.1,
+          "note": "About 10% of GBTC's bitcoin seeded the Grayscale Bitcoin Mini Trust (BTC), distributed 1:1 to holders of record on 2024-07-30."
+        }
+      ],
+      "sources": [
+        "https://etfs.grayscale.com/gbtc",
+        "https://www.sec.gov/Archives/edgar/data/1588489/000095017024087527/gbtc-ex99_1.htm"
+      ]
+    },
+    {
+      "symbol": "IBIT",
+      "source": "yahoo",
+      "kind": "fund",
+      "label": "iShares Bitcoin Trust ETF",
+      "short": "IBIT",
+      "issuer": "BlackRock",
+      "underlying": "BTC-USD",
+      "etf_since": "2024-01-11",
+      "color": {
+        "light": "#334155",
+        "dark": "#cbd5e1"
+      },
+      "fees": [
+        {
+          "from": "2024-01-11",
+          "rate": 0.0025,
+          "note": "0.25% headline; 0.12% on the first $5B for 12 months, so the blended rate rose toward 0.25% as assets grew"
+        }
+      ],
+      "sources": [
+        "https://blackrock.com/americas-offshore/en/products/333011/ishares-bitcoin-trust"
+      ]
+    },
+    {
+      "symbol": "ETHE",
+      "source": "yahoo",
+      "kind": "fund",
+      "label": "Grayscale Ethereum Staking ETF",
+      "short": "ETHE",
+      "issuer": "Grayscale",
+      "underlying": "ETH-USD",
+      "etf_since": "2024-07-23",
+      "color": {
+        "light": "#312e81",
+        "dark": "#818cf8"
+      },
+      "fees": [
+        {
+          "from": "2017-12-14",
+          "rate": 0.025
+        }
+      ],
+      "anchor": {
+        "date": "2026-10-23",
+        "units_per_share": 0.00801892,
+        "source": "https://etfs.grayscale.com/ethe"
+      },
+      "spinoffs": [
+        {
+          "date": "2024-07-23",
+          "fraction": 0.1,
+          "note": "About 10% of ETHE's ether seeded the Grayscale Ethereum Mini Trust (ETH), distributed 1:1 to holders of record on 2024-07-18."
+        }
+      ],
+      "notes": "Stakes most of its ether; net staking rewards are paid out as cash distributions (monthly since January 2026), so ether per share still declines only by the fee.",
+      "sources": [
+        "https://etfs.grayscale.com/ethe",
+        "https://www.sec.gov/Archives/edgar/data/2020455/000095017024102092/eth-20240630.htm"
+      ]
+    },
+    {
+      "symbol": "ETHA",
+      "source": "yahoo",
+      "kind": "fund",
+      "label": "iShares Ethereum Trust ETF",
+      "short": "ETHA",
+      "issuer": "BlackRock",
+      "underlying": "ETH-USD",
+      "etf_since": "2024-07-23",
+      "color": {
+        "light": "#64748b",
+        "dark": "#94a3b8"
+      },
+      "fees": [
+        {
+          "from": "2024-07-23",
+          "rate": 0.0025,
+          "note": "0.25% headline; 0.12% on the first $2.5B for 12 months"
+        }
+      ],
+      "sources": [
+        "https://www.businesswire.com/news/home/20240722613376/en"
+      ]
+    }
+  ],
+  "data_fixes": [
+    {
+      "symbol": "ETHE",
+      "from": "2024-07-18",
+      "to": "2024-07-22",
+      "divide_by": 0.9,
+      "reason": "Yahoo scaled ETHE's history before the 2024-07-23 Mini Trust spin-off by about 0.9 but left these three sessions unscaled, which creates false -11%/+11% daily moves. Dividing by 0.9 restores continuity: the implied premium goes from about -11.5% to about -1.6%, in line with -1.7% on the days before."
+    }
+  ]
+}

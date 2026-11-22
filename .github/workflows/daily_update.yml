@@ -6,44 +6,87 @@ on:
   workflow_dispatch:           # manual "Run workflow" button
   push:
     branches: [main]
-    paths: ["docs/**", "scripts/**", ".github/workflows/**"]
+    paths: ["docs/**", "scripts/**", "tests/**", "config/**", ".github/workflows/**"]
 
 permissions:
   contents: write
   pages: write
   id-token: write
+  issues: write
 
 concurrency:
   group: daily-update
   cancel-in-progress: false
 
 jobs:
-  update:
+  test:
+    name: Validate browser statistics against R
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: r-lib/actions/setup-r@v2
-        with:
-          use-public-rspm: true
+        with: { use-public-rspm: true }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: Rscript -e 'install.packages(c("jsonlite", "sandwich"))'
+      - run: Rscript tests/validate_stats.R
 
-      - name: Install R packages
-        run: Rscript -e 'install.packages("jsonlite")'
+  update:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with: { use-public-rspm: true }
+      - run: Rscript -e 'install.packages("jsonlite")'
 
       - name: Pull data and rebuild dashboard JSON
         run: Rscript scripts/daily_update.R
+
+      - name: Check sources and freshness
+        id: health
+        run: |
+          failed=$(jq -r '.status | to_entries[] | select(.value.ok != true) | "\(.key): \(.value.message)"' docs/data/summary.json)
+          last=$(jq -r '.latest["BTC-USD"].date' docs/data/summary.json)
+          age=$(( ( $(date -u +%s) - $(date -u -d "$last" +%s) ) / 86400 ))
+          msg=""
+          [ -n "$failed" ] && msg="Sources that failed on this run:"$'\n'"$failed"$'\n'
+          [ "$age" -gt 2 ] && msg="$msg"$'\n'"Crypto data end on $last ($age days ago)."
+          if [ -n "$msg" ]; then { echo "problem<<EOF"; echo "$msg"; echo "EOF"; } >> "$GITHUB_OUTPUT"; fi
 
       - name: Commit updated data
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/*.csv docs/data/*.json
-          if git diff --staged --quiet; then
-            echo "No data changes."
-          else
-            git commit -m "Daily data update $(date -u +'%Y-%m-%d')"
-            git push
-          fi
+          if git diff --staged --quiet; then echo "No data changes."; else
+            git commit -m "Daily data update $(date -u +'%Y-%m-%d')"; git push; fi
+
+      - name: Open or update an issue when data are stale or a source failed
+        if: steps.health.outputs.problem != ''
+        env:
+          PROBLEM: ${{ steps.health.outputs.problem }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create data-pipeline --color B60205 --description "Automated data pipeline alerts" --force
+          body="$PROBLEM"$'\n\n'"Run: $RUN_URL"
+          n=$(gh issue list --label data-pipeline --state open --json number -q '.[0].number')
+          if [ -n "$n" ]; then gh issue comment "$n" --body "$body"; else gh issue create --title "Data pipeline: stale data or failed source" --label data-pipeline --body "$body"; fi
+
+      - name: Close the alert issue once a run is clean
+        if: steps.health.outputs.problem == ''
+        run: |
+          n=$(gh issue list --label data-pipeline --state open --json number -q '.[0].number' 2>/dev/null || true)
+          if [ -n "$n" ]; then gh issue close "$n" --comment "Resolved: run ${{ github.run_id }} refreshed every source."; fi
+
+      - name: Open an issue if the pipeline crashed
+        if: failure()
+        run: |
+          gh label create data-pipeline --color B60205 --force
+          gh issue create --title "Data pipeline crashed" --label data-pipeline \
+            --body "The daily update failed. Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
   deploy:
     needs: update
