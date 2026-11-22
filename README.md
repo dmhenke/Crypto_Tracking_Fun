@@ -1,6 +1,6 @@
 # Crypto Tracking Fun
 
-Daily, interactive analysis of Bitcoin, Ethereum, Solana and Cardano on Coinbase against the spot crypto funds: Grayscale's GBTC and ETHE and BlackRock's IBIT and ETHA.
+Daily, interactive analysis of Bitcoin, Ethereum and Cardano on Coinbase against the spot crypto funds: Grayscale's GBTC and ETHE and BlackRock's IBIT and ETHA.
 
 **Dashboard:** https://dmhenke.github.io/Crypto_Tracking_Fun/
 
@@ -26,7 +26,7 @@ Event markers (Terra, Celsius, FTX, the Merge, Grayscale's court win, ETF launch
 
 | Series | Source | Notes |
 |---|---|---|
-| BTC, ETH, SOL, ADA daily | Coinbase Exchange public candles | complete UTC days; ADA from 2021-03-18 and SOL from 2021-06-17, their Coinbase listings |
+| BTC, ETH, ADA daily | Coinbase Exchange public candles | complete UTC days; ADA from 2021-03-18, its Coinbase listing |
 | BTC, ETH at 16:00 ET | Coinbase hourly candles | open of the 16:00 New York hour, to compare with the NYSE close at the same instant |
 | GBTC, IBIT, ETHE, ETHA daily | Yahoo Finance chart API | `close` and `adjclose` (distributions reinvested); full history re-pulled daily |
 

@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-11-22T08:24:40Z",
+  "generated_utc": "2026-11-22T08:56:57Z",
   "ref_date": "2021-01-14",
   "latest": {
     "BTC-USD": {
@@ -17,14 +17,6 @@
       "chg_7d": -4.86934591,
       "chg_30d": -29.48873781,
       "chg_365d": -39.13509094
-    },
-    "SOL-USD": {
-      "date": "2026-11-21",
-      "close": 70.16,
-      "chg_1d": 2.09545984,
-      "chg_7d": -0.12811388,
-      "chg_30d": -32.23220323,
-      "chg_365d": -45.43050478
     },
     "ADA-USD": {
       "date": "2026-11-21",
@@ -129,16 +121,6 @@
       "text": "BTC rose 2.2% on 2026-11-21, 1.0 standard deviations of its last 90 daily moves."
     },
     {
-      "asset": "SOL-USD",
-      "severity": 1,
-      "z": 0.64277219,
-      "ret": 0.0209546,
-      "hi52": false,
-      "lo52": false,
-      "drawdown": -0.73220352,
-      "text": "SOL rose 2.1% on 2026-11-21, 0.6 standard deviations of its last 90 daily moves."
-    },
-    {
       "asset": "ADA-USD",
       "severity": 1,
       "z": 0.23329606,
@@ -155,10 +137,6 @@
       "message": "6 rows fetched"
     },
     "ETH-USD": {
-      "ok": true,
-      "message": "6 rows fetched"
-    },
-    "SOL-USD": {
       "ok": true,
       "message": "6 rows fetched"
     },
@@ -208,14 +186,6 @@
       "nonpositive_close": 0,
       "largest_abs_daily_logret": 0.32308051
     },
-    "SOL-USD": {
-      "rows": 1984,
-      "first": "2021-06-17",
-      "last": "2026-11-21",
-      "missing_calendar_days": 0,
-      "nonpositive_close": 0,
-      "largest_abs_daily_logret": 0.55479798
-    },
     "ADA-USD": {
       "rows": 2075,
       "first": "2021-03-18",
@@ -257,6 +227,15 @@
       "largest_abs_daily_logret": 0.2243483
     }
   },
+  "data_fixes": [
+    {
+      "symbol": "ETHE",
+      "from": "2024-07-18",
+      "to": "2024-07-22",
+      "divide_by": 0.9,
+      "reason": "Yahoo scaled ETHE's history before the 2024-07-23 Mini Trust spin-off by about 0.9 but left these three sessions unscaled, which creates false -11%/+11% daily moves. Dividing by 0.9 restores continuity: the implied premium goes from about -11.5% to about -1.6%, in line with -1.7% on the days before."
+    }
+  ],
   "epochs": {
     "reference_epoch": 532,
     "reference_start_utc": "2025-01-04T21:44:51Z",

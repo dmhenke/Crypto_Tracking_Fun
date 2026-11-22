@@ -28,18 +28,6 @@
       "nyse_close": true
     },
     {
-      "symbol": "SOL-USD",
-      "source": "coinbase",
-      "kind": "coin",
-      "label": "Solana",
-      "short": "SOL",
-      "color": {
-        "light": "#7c3aed",
-        "dark": "#c4b5fd"
-      },
-      "nyse_close": false
-    },
-    {
       "symbol": "ADA-USD",
       "source": "coinbase",
       "kind": "coin",

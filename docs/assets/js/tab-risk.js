@@ -32,7 +32,7 @@
       "Correlation matrix of " + ({ D: "daily", W: "weekly" })[f] + " returns over " + from + " to " + to + " for " + labels.join(", ") + ".");
   }
   function renderVol() {
-    var syms = list("ra", "BTC-USD,ETH-USD,SOL-USD,GBTC"), w = +A.get(T, "rw", "30");
+    var syms = list("ra", "BTC-USD,ETH-USD,ADA-USD,GBTC"), w = +A.get(T, "rw", "30");
     A.assetChips($("rvAssets"), A.symbols(), syms, function (v) { var i = syms.indexOf(v); if (i >= 0) syms.splice(i, 1); else syms.push(v); A.set(T, "ra", syms.join(",")); renderVol(); }, true);
     A.chips($("rvWin"), [30, 60, 90].map(function (v) { return { v: String(v), t: v + "-day" }; }), String(w), function (v) { A.set(T, "rw", v); renderVol(); });
     var rows = [], traces = syms.map(function (s) {

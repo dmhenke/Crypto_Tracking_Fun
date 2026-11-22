@@ -101,7 +101,6 @@
     });
     r.push({ id: "BTC/ETH", a: "BTC-USD", b: "ETH-USD", note: "BTC priced in ETH (the ratio in the original R script)." });
     r.push({ id: "ETH/BTC", a: "ETH-USD", b: "BTC-USD", note: "ETH priced in BTC." });
-    r.push({ id: "SOL/ETH", a: "SOL-USD", b: "ETH-USD", note: "SOL priced in ETH." });
     r.push({ id: "ADA/BTC", a: "ADA-USD", b: "BTC-USD", note: "ADA priced in BTC." });
     r.push({ id: "GBTC $vol ÷ IBIT $vol", a: "GBTC", b: "IBIT", vol: true, note: "Dollar trading volume of GBTC relative to IBIT (log scale): how trading migrated to the cheaper fund." });
     r.push({ id: "GBTC $vol ÷ BTC $vol", a: "GBTC", b: "BTC-USD", vol: true, note: "GBTC dollar volume ÷ Coinbase BTC dollar volume (log scale). The original script divided raw volumes, which mixes shares with BTC." });
