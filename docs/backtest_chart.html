@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ETH Backtest Visualization</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.3/p5.min.js"></script>
+  <style>
+    body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #1a1a1a; color: white; font-family: sans-serif; }
+  </style>
+</head>
+<body>
+<script>
+const backtestData = [
+    {"date": "2025-12-06", "price": 3022.65, "predicted_low": {"usd": 3868.02}, "actual_price_in_1_week": 3085.31},
+    {"date": "2025-12-13", "price": 3085.31, "predicted_low": {"usd": 3758.35}, "actual_price_in_1_week": 2976.79},
+    {"date": "2025-12-20", "price": 2976.79, "predicted_low": {"usd": 2626.56}, "actual_price_in_1_week": 2926.69},
+    {"date": "2025-12-27", "price": 2926.69, "predicted_low": {"usd": 3563.44}, "actual_price_in_1_week": 3121.90},
+    {"date": "2026-01-03", "price": 3121.90, "predicted_low": {"usd": 3703.28}, "actual_price_in_1_week": 3083.13},
+    {"date": "2026-01-10", "price": 3083.13, "predicted_low": {"usd": 3534.72}, "actual_price_in_1_week": 3296.06},
+    {"date": "2026-01-17", "price": 3296.06, "predicted_low": {"usd": 3948.48}, "actual_price_in_1_week": 2950.91},
+    {"date": "2026-01-24", "price": 2950.91, "predicted_low": {"usd": 3045.00}, "actual_price_in_1_week": 2702.40},
+    {"date": "2026-01-31", "price": 2702.40, "predicted_low": {"usd": 3324.74}, "actual_price_in_1_week": 2060.73},
+    {"date": "2026-02-07", "price": 2060.73, "predicted_low": {"usd": 2585.09}, "actual_price_in_1_week": 2047.36},
+    {"date": "2026-02-14", "price": 2047.36, "predicted_low": {"usd": 3568.80}, "actual_price_in_1_week": 1967.81},
+    {"date": "2026-02-21", "price": 1967.81, "predicted_low": {"usd": 3078.99}, "actual_price_in_1_week": 1931.32},
+    {"date": "2026-02-28", "price": 1931.32, "predicted_low": {"usd": 2312.51}, "actual_price_in_1_week": 1980.77},
+    {"date": "2026-03-07", "price": 1980.77, "predicted_low": {"usd": 2144.79}, "actual_price_in_1_week": 2093.00},
+    {"date": "2026-03-14", "price": 2093.00, "predicted_low": {"usd": 2554.24}, "actual_price_in_1_week": 2146.97},
+    {"date": "2026-03-21", "price": 2146.97, "predicted_low": {"usd": 2974.59}, "actual_price_in_1_week": 1991.90},
+    {"date": "2026-03-28", "price": 1991.90, "predicted_low": {"usd": 2908.51}, "actual_price_in_1_week": 2053.60},
+    {"date": "2026-04-04", "price": 2053.60, "predicted_low": {"usd": 3154.45}, "actual_price_in_1_week": 2245.04},
+    {"date": "2026-04-11", "price": 2245.04, "predicted_low": {"usd": 2780.76}, "actual_price_in_1_week": 2421.00},
+    {"date": "2026-04-18", "price": 2421.00, "predicted_low": {"usd": 1709.71}, "actual_price_in_1_week": 2315.51},
+    {"date": "2026-04-25", "price": 2315.51, "predicted_low": {"usd": 768.70}, "actual_price_in_1_week": 2294.66},
+    {"date": "2026-05-02", "price": 2294.66, "predicted_low": {"usd": 1708.32}, "actual_price_in_1_week": 2306.83},
+    {"date": "2026-05-09", "price": 2306.83, "predicted_low": {"usd": 2278.31}, "actual_price_in_1_week": 2223.58},
+    {"date": "2026-05-16", "price": 2223.58, "predicted_low": {"usd": 2189.72}, "actual_price_in_1_week": 2064.37},
+    {"date": "2026-05-23", "price": 2064.37, "predicted_low": {"usd": 1778.64}, "actual_price_in_1_week": 2012.23},
+    {"date": "2026-05-30", "price": 2012.23, "predicted_low": {"usd": 1509.64}, "actual_price_in_1_week": 1580.61}
+];
+
+function setup() {
+    createCanvas(800, 500);
+    noLoop();
+}
+
+function draw() {
+    background(30);
+    let margin = 50;
+    let w = width - 2 * margin;
+    let h = height - 2 * margin;
+
+    // Draw Price Lines
+    stroke(100);
+    line(margin, height - margin, width - margin, height - margin);
+    line(margin, margin, margin, height - margin);
+
+    for (let i = 0; i < backtestData.length; i++) {
+        let x = map(i, 0, backtestData.length - 1, margin, width - margin);
+        
+        // Actual Price (Line)
+        let yActual = map(backtestData[i].actual_price_in_1_week, 1500, 3500, height - margin, margin);
+        stroke(0, 200, 255);
+        point(x, yActual);
+        
+        // Predicted Low (Line)
+        let yPred = map(backtestData[i].predicted_low.usd, 1500, 3500, height - margin, margin);
+        stroke(255, 50, 50);
+        point(x, yPred);
+    }
+    
+    fill(255);
+    text("Actual Price (Blue) vs Predicted Low (Red)", 50, 30);
+}
+</script>
+</body>
+</html>

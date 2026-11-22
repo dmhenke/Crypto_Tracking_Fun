@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crypto Tracking Fun</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%23f2a900%22/%3E%3C/svg%3E">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#ffffff; --ink:#1b1f24; --muted:#5f6b7a; --line:#e3e7ec;
+    --accent:#2f6fde; --up:#1a8f5a; --down:#c23b3b;
+    --c1:#f2a900; --c2:#6f7fd8; --c3:#2a9d8f; --c4:#8a5a00; --c5:#3b3f8f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0f1216; --panel:#171b21; --ink:#e6e9ee; --muted:#9aa5b4; --line:#272d36;
+           --accent:#6a9cff; --up:#3cc486; --down:#ff6b6b; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:28px 24px 8px;max-width:1240px;margin:auto}
+  h1{margin:0;font-size:26px;letter-spacing:-.01em}
+  h2{margin:0 0 4px;font-size:18px}
+  .sub{color:var(--muted);font-size:13px}
+  main{max-width:1240px;margin:auto;padding:8px 24px 48px;display:grid;gap:18px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .kpi .sym{font-weight:600}.kpi .lbl{color:var(--muted);font-size:12px}
+  .kpi .px{font-size:22px;font-variant-numeric:tabular-nums;margin:4px 0}
+  .chg{display:flex;gap:10px;font-size:12px;font-variant-numeric:tabular-nums}
+  .up{color:var(--up)}.down{color:var(--down)}
+  .controls{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:10px 0 4px;font-size:13px}
+  .controls label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+  select,input[type=date]{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font:inherit}
+  .chart{width:100%;height:420px}
+  .note{color:var(--muted);font-size:12.5px;margin-top:6px}
+  table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+  th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--muted);font-weight:600}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:900px){.grid2{grid-template-columns:1fr}}
+  .epoch-big{font-size:34px;font-weight:650}
+  .bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:10px 0}
+  .bar>div{height:100%;background:var(--accent)}
+  .drop{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--muted);cursor:pointer}
+  .drop.hover{border-color:var(--accent);color:var(--ink)}
+  .scroll{max-height:280px;overflow:auto;margin-top:10px}
+  footer{max-width:1240px;margin:auto;padding:0 24px 32px;color:var(--muted);font-size:12px}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Crypto Tracking Fun</h1>
+  <div class="sub" id="updated">Loading data…</div>
+</header>
+
+<main>
+  <section class="kpis" id="kpis"></section>
+
+  <section class="panel">
+    <h2>Fold change from a reference date</h2>
+    <div class="sub">Each series is divided by its last close on or before the reference date (the original scripts rolled weekend dates back to Friday the same way).</div>
+    <div class="controls">
+      <label>Reference date <input type="date" id="refDate"></label>
+      <span id="foldAssets"></span>
+      <label><input type="checkbox" id="totalRet" checked> Trusts as total return (distributions reinvested)</label>
+      <label><input type="checkbox" id="foldLog"> Log scale</label>
+    </div>
+    <div id="foldChart" class="chart"></div>
+  </section>
+
+  <section class="grid2">
+    <div class="panel">
+      <h2>Spread: coin fold change − trust fold change</h2>
+      <div class="sub">Positive means the Coinbase coin outperformed its Grayscale trust since the reference date. Trading days only.</div>
+      <div id="spreadChart" class="chart"></div>
+    </div>
+    <div class="panel">
+      <h2>Ratio explorer</h2>
+      <div class="controls">
+        <select id="ratioSel"></select>
+        <label><input type="checkbox" id="ratioLog"> Log scale</label>
+      </div>
+      <div id="ratioChart" class="chart" style="height:380px"></div>
+      <div class="note" id="ratioNote"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Prices</h2>
+    <div class="controls">
+      <select id="priceSel"></select>
+      <label><input type="checkbox" id="priceLog" checked> Log scale</label>
+    </div>
+    <div id="priceChart" class="chart"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Daily return relationships (trailing 365 days)</h2>
+    <div class="sub">OLS beta of daily log returns and Pearson correlation, each with a 95% confidence interval. Volatility is annualized on 252 days for pairs involving a trust and 365 days for crypto-only pairs.</div>
+    <div class="scroll" style="max-height:none"><table id="statsTbl"></table></div>
+    <div class="note">Coinbase daily bars close at 00:00 UTC and NYSE at 16:00 ET, so same-date returns are offset by 3–4 hours, and weekend crypto moves land in the trusts' Monday return. Both effects pull the trust betas and correlations below 1. Heavy-tailed returns make the normal-theory intervals somewhat optimistic.</div>
+    <h2 style="margin-top:18px">Annualized volatility (trailing 365 days)</h2>
+    <table id="volTbl"></table>
+    <div class="note">95% interval from the χ² distribution of the sample variance; crypto annualized on 365 days, trusts on 252.</div>
+  </section>
+
+  <section class="grid2">
+    <div class="panel">
+      <h2>Cardano epoch</h2>
+      <div class="sub">5-day epochs, rolling over at 21:44:51 UTC. Reference: epoch 532 began 2025-01-04 21:44:51 UTC.</div>
+      <div class="epoch-big" id="epochNum">–</div>
+      <div class="bar"><div id="epochBar" style="width:0%"></div></div>
+      <div id="epochTxt" class="sub"></div>
+      <div class="scroll"><table id="epochTbl"></table></div>
+    </div>
+    <div class="panel">
+      <h2>Staking rewards (local only)</h2>
+      <div class="sub">Drop wallet <code>Rewards-*.csv</code> exports here. Files are parsed in your browser and never uploaded.</div>
+      <div class="drop" id="drop" style="margin-top:10px">Drop CSV files or click to choose<input type="file" id="fileIn" accept=".csv" multiple hidden></div>
+      <div class="controls" id="rwControls" hidden>
+        <label>Value column <select id="rwCol"></select></label>
+        <label>Date column <select id="rwDate"></select></label>
+      </div>
+      <div id="rwChart" class="chart" style="height:300px" hidden></div>
+      <div class="scroll"><table id="rwTbl"></table></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Data: Coinbase Exchange public candles (BTC-USD, ETH-USD, ADA-USD) and Yahoo Finance (GBTC, ETHE), refreshed daily by an R pipeline in GitHub Actions.
+  Source code: <a href="https://github.com/dmhenke/Crypto_Tracking_Fun">github.com/dmhenke/Crypto_Tracking_Fun</a>. Not investment advice.
+</footer>
+
+<script>
+const COLORS = {"BTC-USD":"#f2a900","GBTC":"#8a5a00","ETH-USD":"#6f7fd8","ETHE":"#3b3f8f","ADA-USD":"#2a9d8f"};
+const ORDER = ["BTC-USD","GBTC","ETH-USD","ETHE","ADA-USD"];
+let P, S;
+
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function layout(extra={}) {
+  return Object.assign({
+    paper_bgcolor:"rgba(0,0,0,0)", plot_bgcolor:"rgba(0,0,0,0)",
+    font:{color:css("--ink"), family:"system-ui, sans-serif", size:12},
+    margin:{l:56,r:16,t:40,b:40}, hovermode:"x unified",
+    legend:{orientation:"h", x:0, xanchor:"left", y:1.02, yanchor:"bottom"},
+    xaxis:{gridcolor:css("--line"), rangeselector:{x:1, xanchor:"right", y:1.02, yanchor:"bottom", buttons:[
+      {count:3,label:"3M",step:"month",stepmode:"backward"},
+      {count:1,label:"1Y",step:"year",stepmode:"backward"},
+      {count:3,label:"3Y",step:"year",stepmode:"backward"},{step:"all",label:"All"}],
+      bgcolor:css("--bg"), activecolor:css("--line")}},
+    yaxis:{gridcolor:css("--line"), zerolinecolor:css("--muted")}
+  }, extra);
+}
+const cfg = {responsive:true, displaylogo:false};
+const fmt = (x, d=2) => x==null || isNaN(x) ? "–" : x.toLocaleString("en-US",{minimumFractionDigits:d, maximumFractionDigits:d});
+const pxFmt = x => x>=1000 ? fmt(x,0) : x>=1 ? fmt(x,2) : fmt(x,4);
+
+// series helpers --------------------------------------------------------------
+function series(sym, useAdj) {
+  const a = P.assets[sym];
+  return {date:a.date, val:(useAdj && a.adjclose) ? a.adjclose : a.close};
+}
+function valueOnOrBefore(s, d) {          // binary search on ISO dates
+  let lo=0, hi=s.date.length-1, ans=-1;
+  while (lo<=hi){ const m=(lo+hi)>>1; if (s.date[m]<=d){ans=m;lo=m+1;} else hi=m-1; }
+  return ans;
+}
+function fold(sym, ref, useAdj) {
+  const s = series(sym, useAdj);
+  let i = valueOnOrBefore(s, ref), note = "";
+  if (i < 0) { i = 0; note = ` (from listing ${s.date[0]})`; }
+  const base = s.val[i];
+  return {x:s.date.slice(i), y:s.val.slice(i).map(v=>v/base), base, baseDate:s.date[i], note};
+}
+function toMap(x, y){ const m=new Map(); x.forEach((d,i)=>m.set(d,y[i])); return m; }
+
+// KPI cards -------------------------------------------------------------------
+function renderKpis() {
+  const el = document.getElementById("kpis");
+  el.innerHTML = ORDER.map(sym => {
+    const L = S.latest[sym];
+    const c = (v,lab) => `<span class="${v>=0?'up':'down'}">${lab} ${v>=0?'+':''}${fmt(v,1)}%</span>`;
+    return `<div class="kpi"><div class="sym">${sym}</div><div class="lbl">${L.label} · ${L.date}</div>
+      <div class="px">$${pxFmt(L.close)}</div><div class="chg">${c(L.chg_1d,"1D")}${c(L.chg_7d,"7D")}${c(L.chg_30d,"30D")}${c(L.chg_365d,"1Y")}</div></div>`;
+  }).join("");
+}
+
+// fold change -----------------------------------------------------------------
+function renderFold() {
+  const ref = document.getElementById("refDate").value || P.ref_date;
+  const adj = document.getElementById("totalRet").checked;
+  const on = [...document.querySelectorAll("#foldAssets input:checked")].map(i=>i.value);
+  const traces = on.map(sym => {
+    const f = fold(sym, ref, adj);
+    return {x:f.x, y:f.y, name:`${sym}${f.note}`, type:"scatter", mode:"lines", line:{color:COLORS[sym], width:1.8},
+            hovertemplate:`%{y:.3f}×<extra>${sym} (base $${pxFmt(f.base)} on ${f.baseDate})</extra>`};
+  });
+  Plotly.react("foldChart", traces, layout({
+    yaxis:{title:"Fold change", type:document.getElementById("foldLog").checked?"log":"linear", gridcolor:css("--line")},
+    shapes:[{type:"line", xref:"paper", x0:0, x1:1, y0:1, y1:1, line:{dash:"dot", color:css("--muted"), width:1}}]
+  }), cfg);
+  renderSpread(ref, adj);
+}
+
+function renderSpread(ref, adj) {
+  const pairs = [["BTC-USD","GBTC"],["ETH-USD","ETHE"]];
+  const traces = pairs.map(([c,t]) => {
+    const fc = fold(c, ref, false), ft = fold(t, ref, adj), mc = toMap(fc.x, fc.y);
+    const x=[], y=[];
+    ft.x.forEach((d,i)=>{ if (mc.has(d)) { x.push(d); y.push(mc.get(d)-ft.y[i]); } });
+    return {x, y, name:`${c} − ${t}`, type:"scatter", mode:"lines", line:{color:COLORS[c], width:1.6},
+            hovertemplate:"%{y:+.3f}<extra>"+c+" − "+t+"</extra>"};
+  });
+  Plotly.react("spreadChart", traces, layout({yaxis:{title:"Fold-change difference", gridcolor:css("--line"), zerolinecolor:css("--muted")}}), cfg);
+}
+
+// ratio explorer --------------------------------------------------------------
+const RATIOS = [
+  {id:"BTC/GBTC", a:"BTC-USD", b:"GBTC", note:"Coinbase BTC close ÷ GBTC close (BTC-equivalent price per share; drifts as the trust's fee reduces BTC per share)."},
+  {id:"ETH/ETHE", a:"ETH-USD", b:"ETHE", note:"Coinbase ETH close ÷ ETHE close."},
+  {id:"BTC/ETH",  a:"BTC-USD", b:"ETH-USD", note:"BTC priced in ETH (the ratio in the original script)."},
+  {id:"ETH/BTC",  a:"ETH-USD", b:"BTC-USD", note:"ETH priced in BTC."},
+  {id:"ADA/BTC",  a:"ADA-USD", b:"BTC-USD", note:"ADA priced in BTC."},
+  {id:"GBTC $vol / Coinbase BTC $vol", a:"GBTC", b:"BTC-USD", vol:true, note:"Dollar volume ratio: GBTC shares × close ÷ (Coinbase BTC volume × close). The original compared raw volumes, which mixes shares and BTC units."},
+  {id:"ETHE $vol / Coinbase ETH $vol", a:"ETHE", b:"ETH-USD", vol:true, note:"Dollar volume ratio for the Ethereum pair."}
+];
+function renderRatio() {
+  const r = RATIOS.find(o=>o.id===document.getElementById("ratioSel").value);
+  const A = P.assets[r.a], B = P.assets[r.b];
+  const val = (s,i) => r.vol ? s.close[i]*s.volume[i] : s.close[i];
+  const mb = new Map(); B.date.forEach((d,i)=>mb.set(d, val(B,i)));
+  const x=[], y=[];
+  A.date.forEach((d,i)=>{ const v=mb.get(d); if (v>0) { x.push(d); y.push(val(A,i)/v); } });
+  Plotly.react("ratioChart", [{x, y, type:"scatter", mode:"lines", name:r.id, line:{color:COLORS[r.a], width:1.6}}],
+    layout({showlegend:false, yaxis:{title:r.id, type:(r.vol||document.getElementById("ratioLog").checked)?"log":"linear", gridcolor:css("--line")}}), cfg);
+  document.getElementById("ratioNote").textContent = r.note + (r.vol ? " Shown on a log scale." : "");
+}
+
+// prices ----------------------------------------------------------------------
+function renderPrice() {
+  const sym = document.getElementById("priceSel").value, a = P.assets[sym];
+  const traces = [{x:a.date, y:a.close, name:"Close", type:"scatter", mode:"lines", line:{color:COLORS[sym], width:1.6}},
+                  {x:a.date, y:a.volume, name:"Volume", type:"bar", yaxis:"y2", marker:{color:css("--line")}, opacity:.8}];
+  if (a.adjclose) traces.splice(1,0,{x:a.date, y:a.adjclose, name:"Adj. close", type:"scatter", mode:"lines", line:{color:css("--muted"), width:1, dash:"dot"}});
+  Plotly.react("priceChart", traces, layout({
+    yaxis:{title:"USD", type:document.getElementById("priceLog").checked?"log":"linear", gridcolor:css("--line"), domain:[0.25,1]},
+    yaxis2:{title:a.source==="yahoo"?"Shares":sym.split("-")[0], domain:[0,0.2], gridcolor:css("--line")}
+  }), cfg);
+}
+
+// stats tables ----------------------------------------------------------------
+function renderStats() {
+  const ci = (e,l,h,d=2) => `${fmt(e,d)} <span class="sub">(${fmt(l,d)}, ${fmt(h,d)})</span>`;
+  document.getElementById("statsTbl").innerHTML =
+    "<tr><th>Pair (y ~ x)</th><th>n</th><th>Window</th><th>Beta (95% CI)</th><th>Correlation (95% CI)</th><th>Vol y</th><th>Vol x</th></tr>" +
+    S.return_stats.map(s=>`<tr><td>${s.y} ~ ${s.x}</td><td>${s.n}</td><td>${s.from} → ${s.to}</td>
+      <td>${ci(s.beta,s.beta_lo,s.beta_hi)}</td><td>${ci(s.r,s.r_lo,s.r_hi)}</td>
+      <td>${fmt(100*s.vol_y,0)}%</td><td>${fmt(100*s.vol_x,0)}%</td></tr>`).join("");
+  document.getElementById("volTbl").innerHTML =
+    "<tr><th>Asset</th><th>n returns</th><th>Annualized volatility</th><th>95% CI</th></tr>" +
+    S.volatility.map(v=>`<tr><td>${v.asset}</td><td>${v.n}</td><td>${fmt(100*v.ann_vol,1)}%</td><td>${fmt(100*v.lo,1)}% – ${fmt(100*v.hi,1)}%</td></tr>`).join("");
+}
+
+// Cardano epochs --------------------------------------------------------------
+const E0 = 532, T0 = Date.parse("2025-01-04T21:44:51Z"), ELEN = 432000e3;
+const epochAt = t => E0 + Math.floor((t - T0) / ELEN);
+const epochStart = e => new Date(T0 + (e - E0) * ELEN);
+function tickEpoch() {
+  const now = Date.now(), e = epochAt(now), st = epochStart(e).getTime(), nx = st + ELEN, left = nx - now;
+  document.getElementById("epochNum").textContent = `Epoch ${e}`;
+  document.getElementById("epochBar").style.width = `${100*(now-st)/ELEN}%`;
+  const d=Math.floor(left/864e5), h=Math.floor(left/36e5)%24, m=Math.floor(left/6e4)%60, s=Math.floor(left/1e3)%60;
+  document.getElementById("epochTxt").textContent =
+    `${fmt(100*(now-st)/ELEN,1)}% complete · epoch ${e+1} starts in ${d}d ${h}h ${m}m ${s}s (${new Date(nx).toLocaleString()})`;
+}
+function renderEpochTable() {
+  const e = epochAt(Date.now()), rows = [];
+  for (let k = e + 2; k >= Math.max(E0, e - 12); k--) {
+    const st = epochStart(k);
+    rows.push(`<tr><td>${k}${k===e?" (current)":""}</td><td>${st.toISOString().replace("T"," ").slice(0,16)} UTC</td><td>${st.toLocaleString([], {dateStyle:"medium", timeStyle:"short"})}</td></tr>`);
+  }
+  document.getElementById("epochTbl").innerHTML = "<tr><th>Epoch</th><th>Start (UTC)</th><th>Start (local)</th></tr>" + rows.join("");
+}
+
+// rewards CSV (client-side only) ----------------------------------------------
+function parseCSV(text) {
+  const rows=[]; let row=[], f="", q=false;
+  for (let i=0;i<text.length;i++){ const c=text[i];
+    if (q){ if (c==='"'){ if (text[i+1]==='"'){f+='"';i++;} else q=false; } else f+=c; }
+    else if (c==='"') q=true; else if (c===','){row.push(f);f="";}
+    else if (c==='\n'||c==='\r'){ if (c==='\r'&&text[i+1]==='\n') i++; row.push(f); rows.push(row); row=[]; f=""; }
+    else f+=c; }
+  if (f!==""||row.length){row.push(f);rows.push(row);}
+  const hdr = rows.shift().map(h=>h.trim());
+  return rows.filter(r=>r.length>1).map(r=>Object.fromEntries(hdr.map((h,i)=>[h,(r[i]??"").trim()])));
+}
+let RW = [];
+async function loadFiles(files) {
+  const seen = new Set();
+  for (const f of files) {
+    const fileDate = (f.name.match(/\d{4}-\d{2}-\d{2}/)||[""])[0];
+    for (const r of parseCSV(await f.text())) {
+      const key = JSON.stringify(Object.entries(r).filter(([k])=>!/wallet|address/i.test(k)));
+      if (seen.has(key)) continue; seen.add(key);          // same de-duplication idea as the R script
+      RW.push(Object.assign({_file:f.name, _fileDate:fileDate}, r));
+    }
+  }
+  const cols = Object.keys(RW[0]||{}).filter(c=>!c.startsWith("_"));
+  const numeric = cols.filter(c=>RW.some(r=>r[c]!=="" && !isNaN(parseFloat(r[c].replace(/[^0-9.\-eE]/g,"")))));
+  const epochCols = cols.filter(c=>/epoch/i.test(c)).map(c=>"epoch:"+c);
+  const dateCols = [...epochCols, ...cols.filter(c=>RW.some(r=>!isNaN(Date.parse(r[c])) && /\d{4}/.test(r[c]))), "_fileDate"];
+  const label = o => o==="_fileDate" ? "date in file name" : o.startsWith("epoch:") ? o.slice(6)+" (epoch number)" : o;
+  const fill = (id, opts, pref) => { const s=document.getElementById(id);
+    s.innerHTML = opts.map(o=>`<option value="${o}">${label(o)}</option>`).join("");
+    const p = opts.find(o=>pref.test(o)); if (p) s.value = p; };
+  fill("rwCol", numeric.filter(c=>!/epoch/i.test(c)), /reward|amount|ada/i);
+  fill("rwDate", dateCols, /.*/);      // first choice: epoch column, else a date column, else file name
+  document.getElementById("rwControls").hidden = false;
+  document.getElementById("rwChart").hidden = false;
+  renderRewards();
+}
+function renderRewards() {
+  const col = document.getElementById("rwCol").value, dc = document.getElementById("rwDate").value;
+  const epochOf = r => {
+    if (dc.startsWith("epoch:")) { const e = parseInt(r[dc.slice(6)], 10); return isNaN(e) ? NaN : e; }
+    const t = Date.parse(dc==="_fileDate" ? r._fileDate+"T12:00:00Z" : r[dc]);
+    return isNaN(t) ? NaN : epochAt(t);
+  };
+  const byEpoch = new Map();
+  RW.forEach(r=>{ const e=epochOf(r), v=parseFloat(String(r[col]).replace(/[^0-9.\-eE]/g,""));
+                  if (!isNaN(e)&&!isNaN(v)) byEpoch.set(e,(byEpoch.get(e)||0)+v); });
+  const eps=[...byEpoch.keys()].sort((a,b)=>a-b);
+  Plotly.react("rwChart", [{x:eps.map(String), y:eps.map(e=>byEpoch.get(e)), type:"bar", name:col, marker:{color:COLORS["ADA-USD"]}}],
+    layout({showlegend:false, hovermode:"closest", xaxis:{title:"Epoch", type:"category", gridcolor:css("--line")}, yaxis:{title:col, gridcolor:css("--line")}}), cfg);
+  const cols = Object.keys(RW[0]).filter(c=>!c.startsWith("_")).slice(0,6);
+  document.getElementById("rwTbl").innerHTML = "<tr><th>Epoch</th>"+cols.map(c=>`<th>${c}</th>`).join("")+"</tr>" +
+    RW.slice(0,200).map(r=>{const e=epochOf(r);
+      return `<tr><td>${isNaN(e)?"–":e}</td>${cols.map(c=>`<td>${r[c]}</td>`).join("")}</tr>`;}).join("");
+}
+function initDrop() {
+  const d=document.getElementById("drop"), inp=document.getElementById("fileIn");
+  d.onclick=()=>inp.click(); inp.onchange=()=>loadFiles(inp.files);
+  d.ondragover=e=>{e.preventDefault(); d.classList.add("hover");};
+  d.ondragleave=()=>d.classList.remove("hover");
+  d.ondrop=e=>{e.preventDefault(); d.classList.remove("hover"); loadFiles(e.dataTransfer.files);};
+  ["rwCol","rwDate"].forEach(id=>document.getElementById(id).onchange=renderRewards);
+}
+
+// boot ------------------------------------------------------------------------
+(async function(){
+  try {
+    [P, S] = await Promise.all(["data/prices.json","data/summary.json"].map(u=>fetch(u,{cache:"no-cache"}).then(r=>{if(!r.ok) throw new Error(u+" "+r.status); return r.json();})));
+  } catch(e) {
+    document.getElementById("updated").textContent = "Could not load data ("+e.message+"). If opening locally, serve the docs/ folder with a web server.";
+    return;
+  }
+  document.getElementById("updated").textContent =
+    `Data through ${S.latest["BTC-USD"].date} (crypto, UTC daily close) and ${S.latest["GBTC"].date} (NYSE) · pipeline ran ${S.generated_utc.replace("T"," ").replace("Z"," UTC")}`;
+  renderKpis();
+  const refIn = document.getElementById("refDate"); refIn.value = P.ref_date; refIn.max = S.latest["BTC-USD"].date; refIn.min = "2021-01-01";
+  document.getElementById("foldAssets").innerHTML = ORDER.map(s=>`<label><input type="checkbox" value="${s}" ${s==="ADA-USD"?"":"checked"}> <span style="color:${COLORS[s]}">●</span> ${s}</label>`).join("");
+  document.getElementById("ratioSel").innerHTML = RATIOS.map(r=>`<option>${r.id}</option>`).join("");
+  document.getElementById("priceSel").innerHTML = ORDER.map(s=>`<option value="${s}">${s} — ${P.assets[s].label}</option>`).join("");
+  ["refDate","totalRet","foldLog"].forEach(id=>document.getElementById(id).onchange=renderFold);
+  document.querySelectorAll("#foldAssets input").forEach(i=>i.onchange=renderFold);
+  document.getElementById("ratioSel").onchange=renderRatio; document.getElementById("ratioLog").onchange=renderRatio;
+  document.getElementById("priceSel").onchange=renderPrice; document.getElementById("priceLog").onchange=renderPrice;
+  renderFold(); renderRatio(); renderPrice(); renderStats(); renderEpochTable(); tickEpoch(); setInterval(tickEpoch, 1000);
+  initDrop();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.predict.log
+
+# Private wallet exports: parse them in the dashboard instead of committing
+data/rewards/*
+!data/rewards/.gitkeep
+Rewards-*.csv
+CardanoResults_*.csv
+
+# Editors
+.vscode/
+.idea/
