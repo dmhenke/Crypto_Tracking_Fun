@@ -6,13 +6,20 @@ Daily tracking of Bitcoin, Ethereum and Cardano against the Grayscale trusts (GB
 
 ## What it shows
 
-- **Fold change from a reference date** (default 2021-01-14, as in the original scripts; adjustable in the page). Trusts can be shown as total return, with ETHE's distributions reinvested.
-- **Spread:** coin fold change minus trust fold change (BTC − GBTC, ETH − ETHE).
-- **Ratios:** BTC/GBTC, ETH/ETHE, BTC/ETH, ETH/BTC, ADA/BTC, and trust-vs-Coinbase dollar-volume ratios.
-- **Prices and volume** for each asset.
-- **Return statistics** over the trailing 365 days: beta and correlation of daily log returns, and annualized volatility, each with a 95% confidence interval.
-- **Cardano epochs:** the current epoch, a countdown and the schedule. Epochs last 5 days and roll over at 21:44:51 UTC; epoch 532 began 2025-01-04.
-- **Staking rewards:** drop `Rewards-*.csv` wallet exports into the page. The files are parsed in the browser and never uploaded.
+The page uses the same theme as [SolarPergola](https://dmhenke.github.io/SolarPergola/): teal palette; Inter, Spectral and JetBrains Mono fonts; and a system/light/dark toggle. It has five tabs:
+
+- **Overview:** latest prices, and fold change from a reference date you choose (default 2021-01-14, as in the original scripts). Trusts can be shown as total return, with ETHE's distributions reinvested. A table gives each asset's annualized growth.
+- **Trusts:** coin fold change minus trust fold change (BTC − GBTC, ETH − ETHE), and a ratio explorer (BTC/GBTC, ETH/ETHE, BTC/ETH, ETH/BTC, ADA/BTC, and trust-vs-Coinbase dollar volume).
+- **Prices:** price, volume and drawdown for each asset, with the all-time high, maximum drawdown and 1-year volatility (95% CI).
+- **Analysis:** an interactive return-relationship explorer. You pick any two assets, the window (presets or custom dates), the return frequency (daily, weekly or monthly), the confidence level (90, 95 or 99%) and the rolling-window length. The page recomputes in the browser:
+  - beta, alpha, correlation, R², volatilities, mean return and tracking error, each with intervals where defined, plus skew, kurtosis and drawdowns
+  - a scatter plot with the OLS fit and its confidence band
+  - a histogram of returns with a normal fit
+  - rolling correlation (with a Fisher-z band) and rolling beta
+  - a plain-language reading of the results
+- **Cardano:** the current epoch with a countdown and schedule. Epochs last 5 days and roll over at 21:44:51 UTC; epoch 532 began 2025-01-04. You can also drop `Rewards-*.csv` wallet exports onto the page; they are parsed in the browser, never uploaded, and summarized per epoch.
+
+The browser statistics in `docs/assets/js/stats.js` are checked against base R by `Rscript tests/validate_stats.R`, which needs `node`. The two agree to about 1e-9 relative error.
 
 ## Data sources (no API keys)
 
@@ -55,8 +62,12 @@ cd docs && python3 -m http.server 8000   # then open http://localhost:8000
 .github/workflows/daily_update.yml   daily cron: R pipeline -> commit -> Pages deploy
 scripts/daily_update.R               data pipeline
 data/*.csv                           stored daily bars
-docs/index.html                      dashboard (Plotly)
+docs/index.html                      dashboard (Plotly), tabbed
+docs/assets/css/site.css             theme (ported from SolarPergola) + dashboard styles
+docs/assets/js/stats.js              browser statistics library
+docs/assets/js/app.js                dashboard logic
 docs/data/*.json                     dashboard data, regenerated daily
+tests/validate_stats.R               checks stats.js against R (uses tests/stats_dump.js)
 r_scripts/                           original exploratory R scripts (reference)
 ```
 
