@@ -1,30 +1,30 @@
 {
-  "generated_utc": "2026-11-26T08:35:54Z",
+  "generated_utc": "2026-11-27T08:41:21Z",
   "ref_date": "2021-01-14",
   "latest": {
     "BTC-USD": {
-      "date": "2026-11-25",
-      "close": 60383.51,
-      "chg_1d": 1.07571249,
-      "chg_7d": -4.12532464,
-      "chg_30d": -24.52890489,
-      "chg_365d": -30.85198616
+      "date": "2026-11-26",
+      "close": 60495.57,
+      "chg_1d": 0.18558047,
+      "chg_7d": -2.28975293,
+      "chg_30d": -25.128791,
+      "chg_365d": -33.13104269
     },
     "ETH-USD": {
-      "date": "2026-11-25",
-      "close": 1690.38,
-      "chg_1d": 0.76240321,
-      "chg_7d": -4.74800523,
-      "chg_30d": -27.14946947,
-      "chg_365d": -42.85723944
+      "date": "2026-11-26",
+      "close": 1687.61,
+      "chg_1d": -0.16386848,
+      "chg_7d": -3.86070253,
+      "chg_30d": -28.09532128,
+      "chg_365d": -44.23760008
     },
     "ADA-USD": {
-      "date": "2026-11-25",
-      "close": 0.14563,
-      "chg_1d": 0.86577088,
-      "chg_7d": -3.75388276,
-      "chg_30d": -29.43941082,
-      "chg_365d": -65.45777989
+      "date": "2026-11-26",
+      "close": 0.14844,
+      "chg_1d": 1.92954748,
+      "chg_7d": -2.18121911,
+      "chg_30d": -27.83314697,
+      "chg_365d": -65.92286501
     },
     "GBTC": {
       "date": "2026-11-25",
@@ -61,14 +61,14 @@
   },
   "brief": [
     {
-      "asset": "BTC-USD",
+      "asset": "ADA-USD",
       "severity": 1,
-      "z": 0.50401148,
-      "ret": 0.01075712,
+      "z": 0.49561071,
+      "ret": 0.01929547,
       "hi52": false,
       "lo52": false,
-      "drawdown": -0.51584777,
-      "text": "BTC rose 1.1% on 2026-11-25, 0.5 standard deviations of its last 90 daily moves."
+      "drawdown": -0.94998147,
+      "text": "ADA rose 1.9% on 2026-11-26, 0.5 standard deviations of its last 90 daily moves."
     },
     {
       "asset": "IBIT",
@@ -91,16 +91,6 @@
       "text": "GBTC rose 0.8% on 2026-11-25, 0.3 standard deviations of its last 90 daily moves."
     },
     {
-      "asset": "ETH-USD",
-      "severity": 1,
-      "z": 0.28501902,
-      "ret": 0.00762403,
-      "hi52": false,
-      "lo52": false,
-      "drawdown": -0.65011467,
-      "text": "ETH rose 0.8% on 2026-11-25, 0.3 standard deviations of its last 90 daily moves."
-    },
-    {
       "asset": "ETHE",
       "severity": 1,
       "z": 0.2743043,
@@ -121,19 +111,24 @@
       "text": "ETHA rose 0.9% on 2026-11-25, 0.3 standard deviations of its last 90 daily moves."
     },
     {
-      "asset": "ADA-USD",
+      "asset": "BTC-USD",
       "severity": 1,
-      "z": 0.2235668,
-      "ret": 0.00865771,
+      "z": 0.08751493,
+      "ret": 0.0018558,
       "hi52": false,
       "lo52": false,
-      "drawdown": -0.95092833,
-      "text": "ADA rose 0.9% on 2026-11-25, 0.2 standard deviations of its last 90 daily moves."
+      "drawdown": -0.51494928,
+      "text": "BTC rose 0.2% on 2026-11-26, 0.1 standard deviations of its last 90 daily moves."
     },
     {
-      "asset": "ADA-USD",
+      "asset": "ETH-USD",
       "severity": 1,
-      "text": "Cardano epoch 670 began 2026-11-25 21:44 UTC."
+      "z": -0.06149382,
+      "ret": -0.00163868,
+      "hi52": false,
+      "lo52": false,
+      "drawdown": -0.65068802,
+      "text": "ETH fell 0.2% on 2026-11-26, 0.1 standard deviations of its last 90 daily moves."
     }
   ],
   "status": {
@@ -167,34 +162,34 @@
     },
     "BTC-USD 16:00 ET": {
       "ok": true,
-      "message": "5 rows fetched"
+      "message": "6 rows fetched"
     },
     "ETH-USD 16:00 ET": {
       "ok": true,
-      "message": "6 rows fetched"
+      "message": "4 rows fetched"
     }
   },
   "qc": {
     "BTC-USD": {
-      "rows": 2155,
+      "rows": 2156,
       "first": "2021-01-01",
-      "last": "2026-11-25",
+      "last": "2026-11-26",
       "missing_calendar_days": 0,
       "nonpositive_close": 0,
       "largest_abs_daily_logret": 0.17807628
     },
     "ETH-USD": {
-      "rows": 2155,
+      "rows": 2156,
       "first": "2021-01-01",
-      "last": "2026-11-25",
+      "last": "2026-11-26",
       "missing_calendar_days": 0,
       "nonpositive_close": 0,
       "largest_abs_daily_logret": 0.32308051
     },
     "ADA-USD": {
-      "rows": 2079,
+      "rows": 2080,
       "first": "2021-03-18",
-      "last": "2026-11-25",
+      "last": "2026-11-26",
       "missing_calendar_days": 0,
       "nonpositive_close": 0,
       "largest_abs_daily_logret": 0.54449643
