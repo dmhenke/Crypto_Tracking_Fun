@@ -1,134 +1,134 @@
 {
-  "generated_utc": "2026-11-27T08:41:21Z",
+  "generated_utc": "2026-11-28T07:55:40Z",
   "ref_date": "2021-01-14",
   "latest": {
     "BTC-USD": {
-      "date": "2026-11-26",
-      "close": 60495.57,
-      "chg_1d": 0.18558047,
-      "chg_7d": -2.28975293,
-      "chg_30d": -25.128791,
-      "chg_365d": -33.13104269
+      "date": "2026-11-27",
+      "close": 59858.49,
+      "chg_1d": -1.0531019,
+      "chg_7d": 1.77420756,
+      "chg_30d": -26.32738666,
+      "chg_365d": -34.44956947
     },
     "ETH-USD": {
-      "date": "2026-11-26",
-      "close": 1687.61,
-      "chg_1d": -0.16386848,
-      "chg_7d": -3.86070253,
-      "chg_30d": -28.09532128,
-      "chg_365d": -44.23760008
+      "date": "2026-11-27",
+      "close": 1660.84,
+      "chg_1d": -1.58626697,
+      "chg_7d": 2.56593939,
+      "chg_30d": -29.53256198,
+      "chg_365d": -44.91153818
     },
     "ADA-USD": {
-      "date": "2026-11-26",
-      "close": 0.14844,
-      "chg_1d": 1.92954748,
-      "chg_7d": -2.18121911,
-      "chg_30d": -27.83314697,
-      "chg_365d": -65.92286501
+      "date": "2026-11-27",
+      "close": 0.14829,
+      "chg_1d": -0.10105093,
+      "chg_7d": 3.80092398,
+      "chg_30d": -27.93760327,
+      "chg_365d": -65.76079427
     },
     "GBTC": {
-      "date": "2026-11-25",
-      "close": 46.41,
-      "chg_1d": 0.82554856,
-      "chg_7d": -3.69371239,
-      "chg_30d": -24.69576505,
-      "chg_365d": -32.10942071
+      "date": "2026-11-27",
+      "close": 46.11,
+      "chg_1d": -0.64641241,
+      "chg_7d": 2.53502335,
+      "chg_30d": -26.7281106,
+      "chg_365d": -34.48422847
     },
     "IBIT": {
-      "date": "2026-11-25",
-      "close": 34.07,
-      "chg_1d": 0.91824645,
-      "chg_7d": -3.64819005,
-      "chg_30d": -24.65723131,
-      "chg_365d": -31.25504439
+      "date": "2026-11-27",
+      "close": 33.86,
+      "chg_1d": -0.61637805,
+      "chg_7d": 2.54391278,
+      "chg_30d": -26.61465106,
+      "chg_365d": -33.64687439
     },
     "ETHE": {
-      "date": "2026-11-25",
-      "close": 13.52,
-      "chg_1d": 0.89552239,
-      "chg_7d": -3.42857143,
-      "chg_30d": -27.15517241,
-      "chg_365d": -43.78378378
+      "date": "2026-11-27",
+      "close": 13.35,
+      "chg_1d": -1.25739645,
+      "chg_7d": 4.4600939,
+      "chg_30d": -29.69984202,
+      "chg_365d": -46.29927595
     },
     "ETHA": {
-      "date": "2026-11-25",
-      "close": 38.17,
-      "chg_1d": 0.8987576,
-      "chg_7d": -3.56240526,
-      "chg_30d": -27.07298433,
-      "chg_365d": -42.50640157
+      "date": "2026-11-27",
+      "close": 37.76,
+      "chg_1d": -1.074142,
+      "chg_7d": 4.59833795,
+      "chg_30d": -29.55223881,
+      "chg_365d": -45.0363901
     }
   },
   "brief": [
     {
-      "asset": "ADA-USD",
+      "asset": "ETH-USD",
       "severity": 1,
-      "z": 0.49561071,
-      "ret": 0.01929547,
+      "z": -0.60215924,
+      "ret": -0.01586267,
       "hi52": false,
       "lo52": false,
-      "drawdown": -0.94998147,
-      "text": "ADA rose 1.9% on 2026-11-26, 0.5 standard deviations of its last 90 daily moves."
-    },
-    {
-      "asset": "IBIT",
-      "severity": 1,
-      "z": 0.36021084,
-      "ret": 0.00918246,
-      "hi52": false,
-      "lo52": false,
-      "drawdown": -0.52209286,
-      "text": "IBIT rose 0.9% on 2026-11-25, 0.4 standard deviations of its last 90 daily moves."
-    },
-    {
-      "asset": "GBTC",
-      "severity": 1,
-      "z": 0.32555558,
-      "ret": 0.00825549,
-      "hi52": false,
-      "lo52": false,
-      "drawdown": -0.52849741,
-      "text": "GBTC rose 0.8% on 2026-11-25, 0.3 standard deviations of its last 90 daily moves."
-    },
-    {
-      "asset": "ETHE",
-      "severity": 1,
-      "z": 0.2743043,
-      "ret": 0.00895522,
-      "hi52": false,
-      "lo52": false,
-      "drawdown": -0.67319393,
-      "text": "ETHE rose 0.9% on 2026-11-25, 0.3 standard deviations of its last 90 daily moves."
-    },
-    {
-      "asset": "ETHA",
-      "severity": 1,
-      "z": 0.27343281,
-      "ret": 0.00898758,
-      "hi52": false,
-      "lo52": false,
-      "drawdown": -0.65227293,
-      "text": "ETHA rose 0.9% on 2026-11-25, 0.3 standard deviations of its last 90 daily moves."
+      "drawdown": -0.65622904,
+      "text": "ETH fell 1.6% on 2026-11-27, 0.6 standard deviations of its last 90 daily moves."
     },
     {
       "asset": "BTC-USD",
       "severity": 1,
-      "z": 0.08751493,
-      "ret": 0.0018558,
+      "z": -0.50447918,
+      "ret": -0.01053102,
       "hi52": false,
       "lo52": false,
-      "drawdown": -0.51494928,
-      "text": "BTC rose 0.2% on 2026-11-26, 0.1 standard deviations of its last 90 daily moves."
+      "drawdown": -0.52005735,
+      "text": "BTC fell 1.1% on 2026-11-27, 0.5 standard deviations of its last 90 daily moves."
     },
     {
-      "asset": "ETH-USD",
+      "asset": "ETHE",
       "severity": 1,
-      "z": -0.06149382,
-      "ret": -0.00163868,
+      "z": -0.38957239,
+      "ret": -0.01257396,
       "hi52": false,
       "lo52": false,
-      "drawdown": -0.65068802,
-      "text": "ETH fell 0.2% on 2026-11-26, 0.1 standard deviations of its last 90 daily moves."
+      "drawdown": -0.67730317,
+      "text": "ETHE fell 1.3% on 2026-11-27, 0.4 standard deviations of its last 90 daily moves."
+    },
+    {
+      "asset": "ETHA",
+      "severity": 1,
+      "z": -0.33025166,
+      "ret": -0.01074142,
+      "hi52": false,
+      "lo52": false,
+      "drawdown": -0.65600802,
+      "text": "ETHA fell 1.1% on 2026-11-27, 0.3 standard deviations of its last 90 daily moves."
+    },
+    {
+      "asset": "GBTC",
+      "severity": 1,
+      "z": -0.25764782,
+      "ret": -0.00646412,
+      "hi52": false,
+      "lo52": false,
+      "drawdown": -0.53154526,
+      "text": "GBTC fell 0.6% on 2026-11-27, 0.3 standard deviations of its last 90 daily moves."
+    },
+    {
+      "asset": "IBIT",
+      "severity": 1,
+      "z": -0.24446336,
+      "ret": -0.00616378,
+      "hi52": false,
+      "lo52": false,
+      "drawdown": -0.52503857,
+      "text": "IBIT fell 0.6% on 2026-11-27, 0.2 standard deviations of its last 90 daily moves."
+    },
+    {
+      "asset": "ADA-USD",
+      "severity": 1,
+      "z": -0.02638823,
+      "ret": -0.00101051,
+      "hi52": false,
+      "lo52": false,
+      "drawdown": -0.95003201,
+      "text": "ADA fell 0.1% on 2026-11-27, 0.0 standard deviations of its last 90 daily moves."
     }
   ],
   "status": {
@@ -146,82 +146,82 @@
     },
     "GBTC": {
       "ok": true,
-      "message": "1482 rows fetched"
+      "message": "1483 rows fetched"
     },
     "IBIT": {
       "ok": true,
-      "message": "722 rows fetched"
+      "message": "723 rows fetched"
     },
     "ETHE": {
       "ok": true,
-      "message": "1482 rows fetched"
+      "message": "1483 rows fetched"
     },
     "ETHA": {
       "ok": true,
-      "message": "590 rows fetched"
+      "message": "591 rows fetched"
     },
     "BTC-USD 16:00 ET": {
       "ok": true,
-      "message": "6 rows fetched"
+      "message": "4 rows fetched"
     },
     "ETH-USD 16:00 ET": {
       "ok": true,
-      "message": "4 rows fetched"
+      "message": "5 rows fetched"
     }
   },
   "qc": {
     "BTC-USD": {
-      "rows": 2156,
+      "rows": 2157,
       "first": "2021-01-01",
-      "last": "2026-11-26",
+      "last": "2026-11-27",
       "missing_calendar_days": 0,
       "nonpositive_close": 0,
       "largest_abs_daily_logret": 0.17807628
     },
     "ETH-USD": {
-      "rows": 2156,
+      "rows": 2157,
       "first": "2021-01-01",
-      "last": "2026-11-26",
+      "last": "2026-11-27",
       "missing_calendar_days": 0,
       "nonpositive_close": 0,
       "largest_abs_daily_logret": 0.32308051
     },
     "ADA-USD": {
-      "rows": 2080,
+      "rows": 2081,
       "first": "2021-03-18",
-      "last": "2026-11-26",
+      "last": "2026-11-27",
       "missing_calendar_days": 0,
       "nonpositive_close": 0,
       "largest_abs_daily_logret": 0.54449643
     },
     "GBTC": {
-      "rows": 1482,
+      "rows": 1483,
       "first": "2021-01-04",
-      "last": "2026-11-25",
+      "last": "2026-11-27",
       "missing_calendar_days": null,
       "nonpositive_close": 0,
       "largest_abs_daily_logret": 0.22046704
     },
     "IBIT": {
-      "rows": 722,
+      "rows": 723,
       "first": "2024-01-11",
-      "last": "2026-11-25",
+      "last": "2026-11-27",
       "missing_calendar_days": null,
       "nonpositive_close": 0,
       "largest_abs_daily_logret": 0.15555577
     },
     "ETHE": {
-      "rows": 1482,
+      "rows": 1483,
       "first": "2021-01-04",
-      "last": "2026-11-25",
+      "last": "2026-11-27",
       "missing_calendar_days": null,
       "nonpositive_close": 0,
       "largest_abs_daily_logret": 0.27152379
     },
     "ETHA": {
-      "rows": 590,
+      "rows": 591,
       "first": "2024-07-23",
-      "last": "2026-11-25",
+      "last": "2026-11-27",
       "missing_calendar_days": null,
       "nonpositive_close": 0,
       "largest_abs_daily_logret": 0.2243483
